@@ -1,0 +1,43 @@
+# ---- Build folders ----
+build/
+Debug/
+Release/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+*.map
+*.elf
+*.hex
+*.bin
+*.list
+*.srec
+
+# ---- IDE-specific files ----
+# STM32CubeIDE
+.settings/
+*.launch
+*.project
+*.cproject
+.metadata/
+*.log
+
+# VSCode
+.vscode/
+
+# ---- OS-generated files ----
+.DS_Store
+Thumbs.db
+
+# ---- Temporary files ----
+*.tmp
+*.swp
+*.swo
+
+# ---- Python virtual environments ----
+.venv/
+venv/
+
+# ---- Backup files ----
+*~
+*.bak
