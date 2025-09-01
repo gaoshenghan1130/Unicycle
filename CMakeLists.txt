@@ -45,6 +45,10 @@ set (MFLOAT_ABI               "")
 set (RUNTIME_LIBRARY          "--specs=nano.specs")
 set (RUNTIME_LIBRARY_SYSCALLS "--specs=nosys.specs")
 
+##############################################################################
+
+# Enable export of compile commands for tools like clangd, ccls, etc.
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set (PROJECT_SOURCES
 	# LIST SOURCE FILES HERE

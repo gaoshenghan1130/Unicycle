@@ -1,6 +1,12 @@
 {
     "files.associations": {
         "*.embeddedhtml": "html",
-        "main.h": "c"
+        "main.h": "c",
+        "stm32wbxx_hal_conf.h": "c",
+        "mn.h": "c",
+        "stm32wbxx_hal.h": "c",
+        "stm32wbxx_hal_dma.h": "c",
+        "stm32wbxx_hal_def.h": "c",
+        "stm32wbxx.h": "c"
     }
 }

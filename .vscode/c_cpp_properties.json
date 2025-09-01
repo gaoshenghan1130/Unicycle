@@ -1,18 +1,27 @@
 {
     "configurations": [
         {
-            "name": "Mac",
+            "name": "STM32WB",
             "includePath": [
                 "${workspaceFolder}/**",
-                "Drivers/STM32WBxx_HAL_Driver/Inc",
-                "Drivers/CMSIS/Include", "Drivers/CMSIS/Device/ST/STM32WBxx/Include", 
-                "Core/Inc"
+                "${workspaceFolder}/Core/Inc",
+                "Core/Inc",
+                "${workspaceFolder}/Drivers/STM32WBxx_HAL_Driver/Inc",
+                "${workspaceFolder}/Drivers/STM32WBxx_HAL_Driver/Inc/Legacy",
+                "${workspaceFolder}/Drivers/CMSIS/Include",
+                "${workspaceFolder}/Drivers/CMSIS/Device/ST/STM32WBxx/Include"
             ],
-            "defines": [],
-            "compilerPath": "/usr/bin/clang",
+            "defines": [
+                "STM32WB55xx",
+                "USE_HAL_DRIVER",
+                "STM32WBXX",
+                "__weak=__attribute__((weak))",
+                "__packed=__attribute__((__packed__))"
+            ],
+            "compilerPath": "/opt/ST/STM32CubeCLT_1.19.0/GNU-tools-for-STM32/bin/arm-none-eabi-gcc",
             "cStandard": "c17",
             "cppStandard": "c++14",
-            "intelliSenseMode": "macos-clang-arm64",
+            "intelliSenseMode": "gcc-arm",
             "configurationProvider": "ms-vscode.cmake-tools"
         }
     ],
