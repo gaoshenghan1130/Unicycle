@@ -22,9 +22,6 @@ Makefile
 .metadata/
 *.log
 
-# VSCode
-.vscode/
-
 # ---- OS-generated files ----
 .DS_Store
 Thumbs.db
