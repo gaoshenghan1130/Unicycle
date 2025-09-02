@@ -22,6 +22,10 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "stm32_seq.h"
+#include "app_ble.h"
+#include "svc_ctl.h"
+#include "hw_if.h"
+#include "hw_conf.h"
 
 /* USER CODE END Includes */
 
@@ -67,6 +71,19 @@ static void MX_RF_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+// tracers
+/*int __io_putchar(int ch)
+{
+    HW_UART_Transmit(HW_UART1, (uint8_t *)&ch, 1, 300);
+    return ch;
+}
+
+int _write(int file, char *ptr, int len)
+{
+    HW_UART_Transmit(HW_UART1, (uint8_t *)ptr, len, 300);
+    return len;
+}*/
+
 /* USER CODE END 0 */
 
 /**
@@ -84,12 +101,13 @@ int main(void)
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
+
   /* Config code for STM32_WPAN (HSE Tuning must be done before system clock configuration) */
   MX_APPE_Config();
 
   /* USER CODE BEGIN Init */
-  APP_BLE_Init();
-  SVCCTL_Init();
+
+
 
   /* USER CODE END Init */
 
@@ -113,6 +131,8 @@ int main(void)
   MX_RF_Init();
   /* USER CODE BEGIN 2 */
 
+  MX_USART1_UART_Init();
+
   /* USER CODE END 2 */
 
   /* Init code for STM32_WPAN */
@@ -120,12 +140,32 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+
+
+  //APP_BLE_Init();
+
+  //SVCCTL_Init();
   while (1)
   {
     /* USER CODE END WHILE */
-    MX_APPE_Process();
+
+
 
     /* USER CODE BEGIN 3 */
+	  char msg[] = "Hello UART\r\n";
+	  HAL_StatusTypeDef status = HAL_UART_Transmit(&huart1, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+	  if (status != HAL_OK) {
+		  LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_0);
+	  } else {
+		  LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_0);
+		  HAL_Delay(1000);
+		  LL_GPIO_ResetOutputPin(GPIOB, LL_GPIO_PIN_0);
+		  HAL_Delay(1000);
+
+
+	  };
+
+
   }
   /* USER CODE END 3 */
 }

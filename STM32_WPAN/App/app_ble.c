@@ -269,7 +269,9 @@ void APP_BLE_Init(void)
 #endif /* RADIO_ACTIVITY_EVENT != 0 */
   /* USER CODE BEGIN APP_BLE_Init_1 */
 
+
   Ble_Tl_Init();
+  LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_0);
   tBleStatus ble_status;
   const uint8_t local_name[] = {AD_TYPE_COMPLETE_LOCAL_NAME, 'W','B','_','D','E','M','O'};
 
