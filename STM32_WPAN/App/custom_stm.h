@@ -28,6 +28,7 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "app_includes.h"
 
 /* USER CODE END Includes */
 

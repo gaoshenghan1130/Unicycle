@@ -4,6 +4,10 @@
         "main.h": "c",
         "app_ble.h": "c",
         "ble.h": "c",
-        "dbg_trace.h": "c"
+        "dbg_trace.h": "c",
+        "ble_std.h": "c",
+        "ble_legacy.h": "c",
+        "ble_defs.h": "c",
+        "ble_gap_aci.h": "c"
     }
 }

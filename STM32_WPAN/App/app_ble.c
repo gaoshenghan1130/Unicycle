@@ -19,7 +19,7 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
-#include "main.h"
+#include "../../Core/Inc/main.h"
 
 #include "app_common.h"
 
@@ -37,6 +37,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "app_includes.h"
 
 /* USER CODE END Includes */
 
@@ -280,7 +281,7 @@ void APP_BLE_Init(void)
                                     0, NULL, /* 不加服务UUID */
                                     0, 0);   /* 不加制造商数据 */
 
-  if(status != BLE_STATUS_SUCCESS)
+  if(ble_status != BLE_STATUS_SUCCESS)
   {
     APP_DBG_MSG("Broadcast failed\n", ble_status);
   }

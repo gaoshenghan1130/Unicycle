@@ -23,6 +23,7 @@
 #include "custom_stm.h"
 
 /* USER CODE BEGIN Includes */
+#include "app_includes.h"
 
 /* USER CODE END Includes */
 

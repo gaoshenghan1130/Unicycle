@@ -45,10 +45,11 @@ set(MFLOAT_ABI "")
 set(RUNTIME_LIBRARY "--specs=nano.specs")
 set(RUNTIME_LIBRARY_SYSCALLS "--specs=nosys.specs")
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # too lazy to list all source files, use GLOB to get them automatically
 set(PROJECT_SOURCE_DIR_GLOB
     Core
-    Startup
     Drivers
     Middlewares
     STM32_WPAN
@@ -73,7 +74,7 @@ set(PROJECT_DEFINES
     # LIST COMPILER DEFINITIONS HERE
     USE_HAL_DRIVER
     STM32WB55xx
-    STM32_THREAD_SAFE_STRATEGY=2
+    # STM32_THREAD_SAFE_STRATEGY=2, thread safety will cause confusion with the HAL library
     DEBUG
 )
 
