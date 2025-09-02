@@ -6,7 +6,8 @@
                 "${workspaceFolder}/**",
                 "Drivers/STM32WBxx_HAL_Driver/Inc",
                 "Drivers/CMSIS/Include", "Drivers/CMSIS/Device/ST/STM32WBxx/Include", 
-                "Core/Inc"
+                "Core/Inc",
+                "Core/Inc/ble"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/clang",
