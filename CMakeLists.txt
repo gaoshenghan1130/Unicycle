@@ -47,12 +47,11 @@ set(RUNTIME_LIBRARY_SYSCALLS "--specs=nosys.specs")
 
 # too lazy to list all source files, use GLOB to get them automatically
 set(PROJECT_SOURCE_DIR_GLOB
-    Core/Src
+    Core
     Startup
-    Drivers/STM32WBxx_HAL_Driver
-    Middlewares/ST/STM32_WPAN
-    STM32_WPAN/App
-    STM32_WPAN/Target
+    Drivers
+    Middlewares
+    STM32_WPAN
     Utilities
 )
 
@@ -74,24 +73,24 @@ set(PROJECT_DEFINES
     # LIST COMPILER DEFINITIONS HERE
     USE_HAL_DRIVER
     STM32WB55xx
+    STM32_THREAD_SAFE_STRATEGY=2
+    DEBUG
 )
 
 include(cmake/filefinder.cmake)
 
-set (PROJECT_INCLUDES_GLOB
-	Core/Inc
-	Drivers
-	Middlewares/ST/STM32_WPAN
-	STM32_WPAN
+set(PROJECT_INCLUDES_GLOB
+    Core/Inc
+    Drivers
+    Middlewares/ST/STM32_WPAN
+    STM32_WPAN
 )
 
-
-
-set (PROJECT_INCLUDES "")
+set(PROJECT_INCLUDES "")
 
 find_recursive_include_dirs(${CMAKE_CURRENT_SOURCE_DIR} PROJECT_INCLUDES)
 
-message(STATUS "Include directories found: ${PROJECT_INCLUDES}")
+#message(STATUS "Include directories found: ${PROJECT_INCLUDES}")
 
 ############ MODIFY ACCORDING TO REQUIREMENTS) ########################
 
