@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "stm32_seq.h"
 
 /* USER CODE END Includes */
 
@@ -89,6 +89,7 @@ int main(void)
 
   /* USER CODE BEGIN Init */
   APP_BLE_Init();
+  SVCCTL_Init();
 
   /* USER CODE END Init */
 
@@ -123,6 +124,7 @@ int main(void)
   {
     /* USER CODE END WHILE */
     MX_APPE_Process();
+    UTIL_SEQ_Run(UTIL_SEQ_DEFAULT);
 
     /* USER CODE BEGIN 3 */
   }
