@@ -17,7 +17,7 @@
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
-#include "main.h"
+#include "../Inc/main.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -78,7 +78,6 @@ int main(void)
 
   /* USER CODE BEGIN 1 */
 
-  APP_BLE_Init();
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -89,6 +88,7 @@ int main(void)
   MX_APPE_Config();
 
   /* USER CODE BEGIN Init */
+  APP_BLE_Init();
 
   /* USER CODE END Init */
 

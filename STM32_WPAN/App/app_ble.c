@@ -274,12 +274,12 @@ void APP_BLE_Init(void)
   const uint8_t local_name[] = {AD_TYPE_COMPLETE_LOCAL_NAME, 'W','B','_','D','E','M','O'};
 
   ble_status = aci_gap_set_discoverable(ADV_IND,
-                                    0, 0, /* 无限制广播 */
+                                    0, 0, /* undirected advertisement */
                                     GAP_PUBLIC_ADDR,
                                     NO_WHITE_LIST_USE,
                                     sizeof(local_name), local_name,
-                                    0, NULL, /* 不加服务UUID */
-                                    0, 0);   /* 不加制造商数据 */
+                                    0, NULL, /* No UUID restriction */
+                                    0, 0);   /* not manufacturer */
 
   if(ble_status != BLE_STATUS_SUCCESS)
   {
