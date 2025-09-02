@@ -19,7 +19,7 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
-#include "main.h"
+#include "../../Core/Inc/main.h"
 
 #include "app_common.h"
 
@@ -267,6 +267,27 @@ void APP_BLE_Init(void)
   tBleStatus ret = BLE_STATUS_INVALID_PARAMS;
 #endif /* RADIO_ACTIVITY_EVENT != 0 */
   /* USER CODE BEGIN APP_BLE_Init_1 */
+
+  Ble_Tl_Init();
+  tBleStatus ble_status;
+  const uint8_t local_name[] = {AD_TYPE_COMPLETE_LOCAL_NAME, 'W','B','_','D','E','M','O'};
+
+  ble_status = aci_gap_set_discoverable(ADV_IND,
+                                    0, 0, /* 无限制广播 */
+                                    GAP_PUBLIC_ADDR,
+                                    NO_WHITE_LIST_USE,
+                                    sizeof(local_name), local_name,
+                                    0, NULL, /* 不加服务UUID */
+                                    0, 0);   /* 不加制造商数据 */
+
+  if(status != BLE_STATUS_SUCCESS)
+  {
+    APP_DBG_MSG("Broadcast failed\n", ble_status);
+  }
+  else
+  {
+    APP_DBG_MSG("Broadcast success\n", ble_status);
+  }
 
   /* USER CODE END APP_BLE_Init_1 */
   SHCI_C2_Ble_Init_Cmd_Packet_t ble_init_cmd_packet =

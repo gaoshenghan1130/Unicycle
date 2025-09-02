@@ -3,6 +3,7 @@
         "*.embeddedhtml": "html",
         "main.h": "c",
         "app_ble.h": "c",
-        "ble.h": "c"
+        "ble.h": "c",
+        "dbg_trace.h": "c"
     }
 }
