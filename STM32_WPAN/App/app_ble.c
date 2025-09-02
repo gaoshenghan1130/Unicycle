@@ -19,7 +19,7 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
-#include "../../Core/Inc/main.h"
+#include "main.h"
 
 #include "app_common.h"
 

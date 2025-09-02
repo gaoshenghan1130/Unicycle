@@ -7,7 +7,19 @@
                 "Drivers/STM32WBxx_HAL_Driver/Inc",
                 "Drivers/CMSIS/Include", "Drivers/CMSIS/Device/ST/STM32WBxx/Include", 
                 "Core/Inc",
-                "Core/Inc/ble"
+                "Core/Inc/ble",
+                "Middlewares/ST/STM32_WPAN",
+                "Middlewares/ST/STM32_WPAN/ble",
+                "Middlewares/ST/STM32_WPAN/ble/Core",
+                "Middlewares/ST/STM32_WPAN/ble/Core/auto",
+                "Middlewares/ST/STM32_WPAN/ble/Core/template",
+                "Middlewares/ST/STM32_WPAN/ble/svc",
+                "Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread",
+                "Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread/shci",
+                "Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread/tl",
+                "STM32_WPAN/App",
+                "STM32_WPAN/Target"
+
             ],
             "defines": [],
             "compilerPath": "/usr/bin/clang",
