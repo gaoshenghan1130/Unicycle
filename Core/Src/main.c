@@ -26,6 +26,7 @@
 #include "svc_ctl.h"
 #include "hw_if.h"
 #include "hw_conf.h"
+#include "Logger.h"
 
 /* USER CODE END Includes */
 
@@ -154,6 +155,7 @@ int main(void)
     /* USER CODE BEGIN 3 */
 	  char msg[] = "Hello UART\r\n";
 	  HAL_StatusTypeDef status = HAL_UART_Transmit(&huart1, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+    UART_LOG("Log via UART_LOG\r\n");
 	  if (status != HAL_OK) {
 		  LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_0);
 	  } else {
