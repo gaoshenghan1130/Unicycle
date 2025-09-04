@@ -102,7 +102,6 @@ int main(void)
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
-
   /* Config code for STM32_WPAN (HSE Tuning must be done before system clock configuration) */
   MX_APPE_Config();
 
@@ -149,8 +148,7 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-
-
+    MX_APPE_Process();
 
     /* USER CODE BEGIN 3 */
 	  char msg[] = "Hello UART\r\n";
@@ -353,7 +351,7 @@ void MX_USART1_UART_Init(void)
 
   /* USER CODE END USART1_Init 1 */
   huart1.Instance = USART1;
-  huart1.Init.BaudRate = 115200;
+  huart1.Init.BaudRate = 19200;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
   huart1.Init.Parity = UART_PARITY_NONE;
