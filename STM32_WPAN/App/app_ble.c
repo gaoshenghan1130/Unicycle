@@ -269,28 +269,10 @@ void APP_BLE_Init(void)
 #endif /* RADIO_ACTIVITY_EVENT != 0 */
   /* USER CODE BEGIN APP_BLE_Init_1 */
 
-
-  Ble_Tl_Init();
-  LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_0);
-  tBleStatus ble_status;
-  const uint8_t local_name[] = {AD_TYPE_COMPLETE_LOCAL_NAME, 'W','B','_','D','E','M','O'};
-
-  ble_status = aci_gap_set_discoverable(ADV_IND,
-                                    0, 0, /* undirected advertisement */
-                                    GAP_PUBLIC_ADDR,
-                                    NO_WHITE_LIST_USE,
-                                    sizeof(local_name), local_name,
-                                    0, NULL, /* No UUID restriction */
-                                    0, 0);   /* not manufacturer */
-
-  if(ble_status != BLE_STATUS_SUCCESS)
-  {
-    APP_DBG_MSG("Broadcast failed\n", ble_status);
-  }
-  else
-  {
-    APP_DBG_MSG("Broadcast success\n", ble_status);
-  }
+#include "../../Core/Inc/Logger.h"
+#include "../../Core/Inc/main.h"
+  extern UART_HandleTypeDef huart1;
+  UART_LOG("Entered APP_BLE_Init\r\n");
 
   /* USER CODE END APP_BLE_Init_1 */
   SHCI_C2_Ble_Init_Cmd_Packet_t ble_init_cmd_packet =
@@ -331,30 +313,36 @@ void APP_BLE_Init(void)
   /**
    * Initialize Ble Transport Layer
    */
+  
   Ble_Tl_Init();
-
+UART_LOG("Ble_Tl_Init\r\n");
   /**
    * Do not allow standby in the application
    */
   UTIL_LPM_SetOffMode(1 << CFG_LPM_APP_BLE, UTIL_LPM_DISABLE);
+  UART_LOG("UTIL_LPM_SetOffMode\r\n");
 
   /**
    * Register the hci transport layer to handle BLE User Asynchronous Events
    */
   UTIL_SEQ_RegTask(1<<CFG_TASK_HCI_ASYNCH_EVT_ID, UTIL_SEQ_RFU, hci_user_evt_proc);
+  UART_LOG("UTIL_SEQ_RegTask\r\n");
 
   /**
    * Starts the BLE Stack on CPU2
    */
   status = SHCI_C2_BLE_Init(&ble_init_cmd_packet);
+  UART_LOG("SHCI_C2_BLE_Init\r\n");
   if (status != SHCI_Success)
   {
+    UART_LOG("SHCI_C2_BLE_Init failed\r\n");
     APP_DBG_MSG("  Fail   : SHCI_C2_BLE_Init command, result: 0x%02x\n\r", status);
     /* if you are here, maybe CPU2 doesn't contain STM32WB_Copro_Wireless_Binaries, see Release_Notes.html */
     Error_Handler();
   }
   else
   {
+    UART_LOG("SHCI_C2_BLE_Init success\r\n");
     APP_DBG_MSG("  Success: SHCI_C2_BLE_Init command\n\r");
   }
 
@@ -366,6 +354,7 @@ void APP_BLE_Init(void)
   /**
    * Initialization of the BLE Services
    */
+  UART_LOG("SVCCTL_Init\r\n");
   SVCCTL_Init();
 
   /**
@@ -407,6 +396,7 @@ void APP_BLE_Init(void)
   /**
    * Initialize Custom Template Application
    */
+  
   Custom_APP_Init();
 
   /* USER CODE BEGIN APP_BLE_Init_3 */
@@ -425,6 +415,30 @@ void APP_BLE_Init(void)
   Adv_Request(APP_BLE_FAST_ADV);
 
   /* USER CODE BEGIN APP_BLE_Init_2 */
+
+
+  UART_LOG("APP_BLE_Init\r\n");
+  LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_0);
+  tBleStatus ble_status;
+  const uint8_t local_name[] = {AD_TYPE_COMPLETE_LOCAL_NAME, 'W','B','_','D','E','M','O'};
+  UART_LOG("Initialize status begin\r\n");
+  ble_status = aci_gap_set_discoverable(ADV_IND,
+                                    0, 0, /* undirected advertisement */
+                                    GAP_PUBLIC_ADDR,
+                                    NO_WHITE_LIST_USE,
+                                    sizeof(local_name), local_name,
+                                    0, NULL, /* No UUID restriction */
+                                    0, 0);   /* not manufacturer */
+  UART_LOG("Aci Discoverable\r\n");
+                                  
+  if(ble_status != BLE_STATUS_SUCCESS)
+  {
+    APP_DBG_MSG("Broadcast failed\n", ble_status);
+  }
+  else
+  {
+    APP_DBG_MSG("Broadcast success\n", ble_status);
+  }
 
   /* USER CODE END APP_BLE_Init_2 */
 

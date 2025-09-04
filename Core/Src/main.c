@@ -137,35 +137,26 @@ int main(void)
 
   /* Init code for STM32_WPAN */
   MX_APPE_Init();
+  UART_LOG("MX_APPE_Init\r\n");
+  APP_BLE_Init();
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-
-
-  //APP_BLE_Init();
-
-  //SVCCTL_Init();
+  unsigned long int main_loop_counter = 0;
   while (1)
   {
     /* USER CODE END WHILE */
     MX_APPE_Process();
 
     /* USER CODE BEGIN 3 */
-	  char msg[] = "Hello UART\r\n";
-	  HAL_StatusTypeDef status = HAL_UART_Transmit(&huart1, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
-    UART_LOG("Log via UART_LOG\r\n");
-	  if (status != HAL_OK) {
-		  LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_0);
-	  } else {
-		  LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_0);
-		  HAL_Delay(1000);
-		  LL_GPIO_ResetOutputPin(GPIOB, LL_GPIO_PIN_0);
-		  HAL_Delay(1000);
+    char* msg = sprintf("Main loop count: %lu\r\n", main_loop_counter++);
 
+	  HAL_UART_Transmit(&huart1, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
 
-	  };
-
-
+		LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_0);
+		HAL_Delay(1000);
+		LL_GPIO_ResetOutputPin(GPIOB, LL_GPIO_PIN_0);
+		HAL_Delay(1000);
   }
   /* USER CODE END 3 */
 }

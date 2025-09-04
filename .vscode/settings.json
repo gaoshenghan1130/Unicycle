@@ -11,6 +11,7 @@
         "ble_gap_aci.h": "c",
         "custom_stm.h": "c",
         "common_blesvc.h": "c",
-        "ble_common.h": "c"
+        "ble_common.h": "c",
+        "logger.h": "c"
     }
 }
