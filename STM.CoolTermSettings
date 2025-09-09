@@ -1,4 +1,4 @@
-Port = /dev/tty.usbmodem21403
+Port = usbmodem21403
 BaudRate = 19200
 DataBits = 8
 Parity = N
@@ -144,4 +144,4 @@ ChartNoOfDatapoints = 1
 TxMacro = 
 KeepOnTop = false
 PreventWindowClosure = false
-WindowPosition = 364,206,700,480
+WindowPosition = 0,101,1512,881
