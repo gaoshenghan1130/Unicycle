@@ -47,7 +47,6 @@
 
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c1;
-DMA_HandleTypeDef hdma_i2c1_tx;
 DMA_HandleTypeDef hdma_i2c1_rx;
 
 IPCC_HandleTypeDef hipcc;
@@ -154,14 +153,27 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
     char msg[64];  // buffer for the message
+
+    /// debug with UART
     sprintf(msg, "Main loop count: %lu\r\n", main_loop_counter++);
-
 	  HAL_UART_Transmit(&huart1, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
-
+    ///// debug for LED toggling
 		LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_0);
 		HAL_Delay(1000);
 		LL_GPIO_ResetOutputPin(GPIOB, LL_GPIO_PIN_0);
 		HAL_Delay(1000);
+
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    //// Main loop ///////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+    HAL_I2C_Master_Receive(&hi2c1, 0xD0, (uint8_t*)msg, 4, HAL_MAX_DELAY); // read 4 bytes from the device with address 0x68
+
+
+
+
   }
   /* USER CODE END 3 */
 }
@@ -444,9 +456,6 @@ static void MX_DMA_Init(void)
   /* DMA1_Channel2_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Channel2_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel2_IRQn);
-  /* DMA1_Channel3_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel3_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Channel3_IRQn);
 
 }
 
