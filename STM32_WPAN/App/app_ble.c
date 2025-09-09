@@ -313,36 +313,30 @@ void APP_BLE_Init(void)
   /**
    * Initialize Ble Transport Layer
    */
-  
   Ble_Tl_Init();
-UART_LOG("Ble_Tl_Init\r\n");
+
   /**
    * Do not allow standby in the application
    */
   UTIL_LPM_SetOffMode(1 << CFG_LPM_APP_BLE, UTIL_LPM_DISABLE);
-  UART_LOG("UTIL_LPM_SetOffMode\r\n");
 
   /**
    * Register the hci transport layer to handle BLE User Asynchronous Events
    */
   UTIL_SEQ_RegTask(1<<CFG_TASK_HCI_ASYNCH_EVT_ID, UTIL_SEQ_RFU, hci_user_evt_proc);
-  UART_LOG("UTIL_SEQ_RegTask\r\n");
 
   /**
    * Starts the BLE Stack on CPU2
    */
   status = SHCI_C2_BLE_Init(&ble_init_cmd_packet);
-  UART_LOG("SHCI_C2_BLE_Init\r\n");
   if (status != SHCI_Success)
   {
-    UART_LOG("SHCI_C2_BLE_Init failed\r\n");
     APP_DBG_MSG("  Fail   : SHCI_C2_BLE_Init command, result: 0x%02x\n\r", status);
     /* if you are here, maybe CPU2 doesn't contain STM32WB_Copro_Wireless_Binaries, see Release_Notes.html */
     Error_Handler();
   }
   else
   {
-    UART_LOG("SHCI_C2_BLE_Init success\r\n");
     APP_DBG_MSG("  Success: SHCI_C2_BLE_Init command\n\r");
   }
 
@@ -354,7 +348,6 @@ UART_LOG("Ble_Tl_Init\r\n");
   /**
    * Initialization of the BLE Services
    */
-  UART_LOG("SVCCTL_Init\r\n");
   SVCCTL_Init();
 
   /**
@@ -396,7 +389,6 @@ UART_LOG("Ble_Tl_Init\r\n");
   /**
    * Initialize Custom Template Application
    */
-  
   Custom_APP_Init();
 
   /* USER CODE BEGIN APP_BLE_Init_3 */

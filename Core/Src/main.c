@@ -27,6 +27,7 @@
 #include "hw_if.h"
 #include "hw_conf.h"
 #include "Logger.h"
+#include "stm32_lpm.h"
 
 /* USER CODE END Includes */
 
@@ -86,45 +87,63 @@ static void MX_RF_Init(void);
 #define BNO055_EULER 0x1A
 #define BNO055_ACCEL_RAW 0x08
 #define BNO055_SYS_STAT 0x39
+#define BNO_RST_GPIO_Port GPIOB
+#define BNO_RST_Pin GPIO_PIN_4
+
+void BNO055_HardwareReset(void)
+{
+  // 拉低 RESET
+  HAL_GPIO_WritePin(BNO_RST_GPIO_Port, BNO_RST_Pin, GPIO_PIN_RESET);
+  HAL_Delay(10); // 至少 10 ms
+
+  // 拉高，芯片上电
+  HAL_GPIO_WritePin(BNO_RST_GPIO_Port, BNO_RST_Pin, GPIO_PIN_SET);
+  HAL_Delay(700); // 等待芯片稳定
+}
 
 void BNO055_Init(void)
 {
-    HAL_Delay(700); // 上电稳定
+  UTIL_LPM_SetOffMode(1U, UTIL_LPM_DISABLE);
 
-    // 1. 切 CONFIG_MODE
-    uint8_t mode = 0x00;
-    HAL_I2C_Mem_Write(&hi2c1, BNO055_ADDR, BNO055_OPR_MODE, I2C_MEMADD_SIZE_8BIT, &mode, 1, HAL_MAX_DELAY);
-    HAL_Delay(25);
+  BNO055_HardwareReset();
+  HAL_Delay(700); // 上电稳定
 
-    // 2. 设置 Page 0
-    uint8_t page = 0x00;
-    HAL_I2C_Mem_Write(&hi2c1, BNO055_ADDR, BNO055_PAGE_ID, I2C_MEMADD_SIZE_8BIT, &page, 1, HAL_MAX_DELAY);
+  // 1. 切 CONFIG_MODE
+  uint8_t mode = 0x00;
+  HAL_I2C_Mem_Write(&hi2c1, BNO055_ADDR, BNO055_OPR_MODE, I2C_MEMADD_SIZE_8BIT, &mode, 1, HAL_MAX_DELAY);
+  HAL_Delay(25);
 
-    // 3. 切 NDOF
-    mode = 0x0C;
-    HAL_I2C_Mem_Write(&hi2c1, BNO055_ADDR, BNO055_OPR_MODE, I2C_MEMADD_SIZE_8BIT, &mode, 1, HAL_MAX_DELAY);
-    HAL_Delay(50);
+  // 2. 设置 Page 0
+  uint8_t page = 0x00;
+  HAL_I2C_Mem_Write(&hi2c1, BNO055_ADDR, BNO055_PAGE_ID, I2C_MEMADD_SIZE_8BIT, &page, 1, HAL_MAX_DELAY);
 
-    // 4. 等待系统状态 = 3
-    uint8_t sys_stat = 0;
-    uint32_t timeout = HAL_GetTick() + 5000; // 最多等 5 秒
-    while(HAL_GetTick() < timeout)
-    {
-        HAL_I2C_Mem_Read(&hi2c1, BNO055_ADDR, BNO055_SYS_STAT, I2C_MEMADD_SIZE_8BIT, &sys_stat, 1, HAL_MAX_DELAY);
-        if(sys_stat == 3) break;
-        HAL_Delay(50);
-    }
+  // 3. 切 NDOF
+  mode = 0x0C;
+  HAL_I2C_Mem_Write(&hi2c1, BNO055_ADDR, BNO055_OPR_MODE, I2C_MEMADD_SIZE_8BIT, &mode, 1, HAL_MAX_DELAY);
+  HAL_Delay(700);
 
-    // 打印状态
-    char msg[64];
-    sprintf(msg, "BNO055 SYS_STAT: 0x%02X\r\n", sys_stat);
-    HAL_UART_Transmit(&huart1, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
+  // 4. 等待系统状态 = 3
+  uint8_t sys_stat = 0;
+  uint32_t timeout = HAL_GetTick() + 5000; // 最多等 5 秒
+  while (1)
+  {
+    HAL_I2C_Mem_Read(&hi2c1, BNO055_ADDR, BNO055_SYS_STAT, I2C_MEMADD_SIZE_8BIT, &sys_stat, 1, HAL_MAX_DELAY);
+    if (sys_stat == 3)
+      break;
+    HAL_Delay(700);
+    HAL_UART_Transmit(&huart1, (uint8_t *)".", 1, HAL_MAX_DELAY); // 打印等待点
+  }
 
-    // 5. 打印 CHIP_ID
-    uint8_t id = 0;
-    HAL_I2C_Mem_Read(&hi2c1, BNO055_ADDR, BNO055_CHIP_ID, I2C_MEMADD_SIZE_8BIT, &id, 1, HAL_MAX_DELAY);
-    sprintf(msg, "BNO055 CHIP_ID: 0x%02X\r\n", id);
-    HAL_UART_Transmit(&huart1, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
+  // 打印状态
+  char msg[64];
+  sprintf(msg, "BNO055 SYS_STAT: 0x%02X\r\n", sys_stat);
+  HAL_UART_Transmit(&huart1, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
+
+  // 5. 打印 CHIP_ID
+  uint8_t id = 0;
+  HAL_I2C_Mem_Read(&hi2c1, BNO055_ADDR, BNO055_CHIP_ID, I2C_MEMADD_SIZE_8BIT, &id, 1, HAL_MAX_DELAY);
+  sprintf(msg, "BNO055 CHIP_ID: 0x%02X\r\n", id);
+  HAL_UART_Transmit(&huart1, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
 }
 
 void BNO055_ReadEuler(void)
@@ -223,11 +242,12 @@ int main(void)
 
   /* Init code for STM32_WPAN */
   MX_APPE_Init();
-  BNO055_Init();
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   unsigned long int main_loop_counter = 0;
+  UTIL_LPM_SetOffMode(1U, UTIL_LPM_DISABLE);
+  BNO055_Init();
   while (1)
   {
     /* USER CODE END WHILE */
@@ -547,13 +567,13 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOE_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0 | GPIO_PIN_1, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_4, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOE, GPIO_PIN_4, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : PB0 PB1 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_1;
+  /*Configure GPIO pins : PB0 PB1 PB4 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_4;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
