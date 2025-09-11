@@ -49,6 +49,7 @@
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c1;
 DMA_HandleTypeDef hdma_i2c1_rx;
+DMA_HandleTypeDef hdma_i2c1_tx;
 
 IPCC_HandleTypeDef hipcc;
 
@@ -89,6 +90,7 @@ static void MX_RF_Init(void);
 #define BNO055_SYS_STAT 0x39
 #define BNO_RST_GPIO_Port GPIOB
 #define BNO_RST_Pin GPIO_PIN_4
+#define BNO055_SYS_ERR 0x3A
 
 void BNO055_HardwareReset(void)
 {
@@ -99,6 +101,7 @@ void BNO055_HardwareReset(void)
   // 拉高，芯片上电
   HAL_GPIO_WritePin(BNO_RST_GPIO_Port, BNO_RST_Pin, GPIO_PIN_SET);
   HAL_Delay(700); // 等待芯片稳定
+
 }
 
 void BNO055_Init(void)
@@ -115,24 +118,50 @@ void BNO055_Init(void)
 
   // 2. 设置 Page 0
   uint8_t page = 0x00;
-  HAL_I2C_Mem_Write(&hi2c1, BNO055_ADDR, BNO055_PAGE_ID, I2C_MEMADD_SIZE_8BIT, &page, 1, HAL_MAX_DELAY);
+  if(HAL_I2C_Mem_Write(&hi2c1, BNO055_ADDR, BNO055_PAGE_ID, I2C_MEMADD_SIZE_8BIT, &page, 1, HAL_MAX_DELAY) != HAL_OK)
+  {
+    char msg[64];
+    sprintf(msg, "I2C Write Page failed!\r\n");
+    HAL_UART_Transmit(&huart1, msg, strlen(msg), HAL_MAX_DELAY);
+  }
 
   // 3. 切 NDOF
   mode = 0x0C;
   HAL_I2C_Mem_Write(&hi2c1, BNO055_ADDR, BNO055_OPR_MODE, I2C_MEMADD_SIZE_8BIT, &mode, 1, HAL_MAX_DELAY);
-  HAL_Delay(700);
+  HAL_Delay(50); // 等待寄存器生效
+
+  uint8_t mode_check = 0;
+  HAL_I2C_Mem_Read(&hi2c1, BNO055_ADDR, BNO055_OPR_MODE, I2C_MEMADD_SIZE_8BIT, &mode_check, 1, HAL_MAX_DELAY);
+
+  char oprmsg[32];
+  sprintf(oprmsg, "OPR_MODE readback=0x%02X\r\n", mode_check);
+  HAL_UART_Transmit(&huart1, (uint8_t *)oprmsg, strlen(oprmsg), HAL_MAX_DELAY);
 
   // 4. 等待系统状态 = 3
   uint8_t sys_stat = 0;
   uint32_t timeout = HAL_GetTick() + 5000; // 最多等 5 秒
-  while (1)
-  {
+
     HAL_I2C_Mem_Read(&hi2c1, BNO055_ADDR, BNO055_SYS_STAT, I2C_MEMADD_SIZE_8BIT, &sys_stat, 1, HAL_MAX_DELAY);
-    if (sys_stat == 3)
-      break;
+
+        // 读取 SYS_ERR 并打印
+    uint8_t sys_err = 0;
+    if (HAL_I2C_Mem_Read(&hi2c1, BNO055_ADDR, BNO055_SYS_ERR, I2C_MEMADD_SIZE_8BIT, &sys_err, 1, HAL_MAX_DELAY) == HAL_OK)
+    {
+        char msg[32];
+        sprintf(msg, "SYS_ERR=0x%02X\r\n", sys_err);
+        HAL_UART_Transmit(&huart1, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
+    }
+    else
+    {
+        char msg[32];
+        sprintf(msg, "Read SYS_ERR failed\r\n");
+        HAL_UART_Transmit(&huart1, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
+    }
+
+
     HAL_Delay(700);
     HAL_UART_Transmit(&huart1, (uint8_t *)".", 1, HAL_MAX_DELAY); // 打印等待点
-  }
+  
 
   // 打印状态
   char msg[64];
@@ -159,7 +188,7 @@ void BNO055_ReadEuler(void)
   }
   sprintf(msg, "Accel Raw: %02X %02X %02X %02X %02X %02X\r\n",
           accel[0], accel[1], accel[2], accel[3], accel[4], accel[5]);
-  HAL_UART_Transmit(&huart1, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
+  //HAL_UART_Transmit(&huart1, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
 
   // 2. 检查系统状态，确保融合引擎就绪
   uint8_t sys_stat;
@@ -167,8 +196,28 @@ void BNO055_ReadEuler(void)
   if (sys_stat != 3) // 3 = system running
   {
     HAL_UART_Transmit(&huart1, (uint8_t *)"Fusion engine not ready\r\n", 27, HAL_MAX_DELAY);
-    return;
+    char err_msg[32];
+    sprintf(err_msg, "SYS_STAT=0x%02X\r\n", sys_stat);
+    HAL_UART_Transmit(&huart1, (uint8_t *)err_msg, strlen(err_msg), HAL_MAX_DELAY);
   }
+
+  // 读取校准状态
+uint8_t cal;
+HAL_I2C_Mem_Read(&hi2c1, BNO055_ADDR, 0x35, I2C_MEMADD_SIZE_8BIT, &cal, 1, HAL_MAX_DELAY);
+char cmsg[32];
+ uint8_t sys_cal  = (cal >> 6) & 0x03;
+  uint8_t gyro_cal = (cal >> 4) & 0x03;
+  uint8_t accel_cal = (cal >> 2) & 0x03;
+  uint8_t mag_cal   = (cal >> 0) & 0x03;
+sprintf(cmsg, "CALIB_STAT=0x%02X (Sys:%d Gyro:%d Accel:%d Mag:%d)\r\n", cal, sys_cal, gyro_cal, accel_cal, mag_cal);
+HAL_UART_Transmit(&huart1, (uint8_t *)cmsg, strlen(cmsg), HAL_MAX_DELAY);
+
+// 读取当前 OPR_MODE
+uint8_t opr;
+HAL_I2C_Mem_Read(&hi2c1, BNO055_ADDR, BNO055_OPR_MODE,
+                 I2C_MEMADD_SIZE_8BIT, &opr, 1, HAL_MAX_DELAY);
+sprintf(msg, "OPR_MODE=0x%02X\r\n", opr);
+HAL_UART_Transmit(&huart1, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
 
   // 3. 读取 Euler 角
   uint8_t eul[6];
@@ -177,6 +226,7 @@ void BNO055_ReadEuler(void)
     HAL_UART_Transmit(&huart1, (uint8_t *)"Euler read failed!\r\n", 21, HAL_MAX_DELAY);
     return;
   }
+
 
   int16_t heading = (int16_t)((eul[1] << 8) | eul[0]);
   int16_t roll = (int16_t)((eul[3] << 8) | eul[2]);
@@ -194,9 +244,9 @@ void BNO055_ReadEuler(void)
 /* USER CODE END 0 */
 
 /**
- * @brief  The application entry point.
- * @retval int
- */
+  * @brief  The application entry point.
+  * @retval int
+  */
 int main(void)
 {
 
@@ -277,27 +327,28 @@ int main(void)
 }
 
 /**
- * @brief System Clock Configuration
- * @retval None
- */
+  * @brief System Clock Configuration
+  * @retval None
+  */
 void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
   /** Configure LSE Drive Capability
-   */
+  */
   HAL_PWR_EnableBkUpAccess();
   __HAL_RCC_LSEDRIVE_CONFIG(RCC_LSEDRIVE_MEDIUMHIGH);
 
   /** Configure the main internal regulator output voltage
-   */
+  */
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 
   /** Initializes the RCC Oscillators according to the specified parameters
-   * in the RCC_OscInitTypeDef structure.
-   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI | RCC_OSCILLATORTYPE_HSE | RCC_OSCILLATORTYPE_LSE;
+  * in the RCC_OscInitTypeDef structure.
+  */
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_HSE
+                              |RCC_OSCILLATORTYPE_LSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.LSEState = RCC_LSE_ON;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
@@ -309,8 +360,10 @@ void SystemClock_Config(void)
   }
 
   /** Configure the SYSCLKSource, HCLK, PCLK1 and PCLK2 clocks dividers
-   */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK4 | RCC_CLOCKTYPE_HCLK2 | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
+  */
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK4|RCC_CLOCKTYPE_HCLK2
+                              |RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSE;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
@@ -325,16 +378,16 @@ void SystemClock_Config(void)
 }
 
 /**
- * @brief Peripherals Common Clock Configuration
- * @retval None
- */
+  * @brief Peripherals Common Clock Configuration
+  * @retval None
+  */
 void PeriphCommonClock_Config(void)
 {
   RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
   /** Initializes the peripherals clock
-   */
-  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SMPS | RCC_PERIPHCLK_RFWAKEUP;
+  */
+  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_SMPS|RCC_PERIPHCLK_RFWAKEUP;
   PeriphClkInitStruct.RFWakeUpClockSelection = RCC_RFWKPCLKSOURCE_LSE;
   PeriphClkInitStruct.SmpsClockSelection = RCC_SMPSCLKSOURCE_HSE;
   PeriphClkInitStruct.SmpsDivSelection = RCC_SMPSCLKDIV_RANGE1;
@@ -349,10 +402,10 @@ void PeriphCommonClock_Config(void)
 }
 
 /**
- * @brief I2C1 Initialization Function
- * @param None
- * @retval None
- */
+  * @brief I2C1 Initialization Function
+  * @param None
+  * @retval None
+  */
 static void MX_I2C1_Init(void)
 {
 
@@ -378,14 +431,14 @@ static void MX_I2C1_Init(void)
   }
 
   /** Configure Analogue filter
-   */
+  */
   if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
   {
     Error_Handler();
   }
 
   /** Configure Digital filter
-   */
+  */
   if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
   {
     Error_Handler();
@@ -393,13 +446,14 @@ static void MX_I2C1_Init(void)
   /* USER CODE BEGIN I2C1_Init 2 */
 
   /* USER CODE END I2C1_Init 2 */
+
 }
 
 /**
- * @brief IPCC Initialization Function
- * @param None
- * @retval None
- */
+  * @brief IPCC Initialization Function
+  * @param None
+  * @retval None
+  */
 static void MX_IPCC_Init(void)
 {
 
@@ -418,13 +472,14 @@ static void MX_IPCC_Init(void)
   /* USER CODE BEGIN IPCC_Init 2 */
 
   /* USER CODE END IPCC_Init 2 */
+
 }
 
 /**
- * @brief RF Initialization Function
- * @param None
- * @retval None
- */
+  * @brief RF Initialization Function
+  * @param None
+  * @retval None
+  */
 static void MX_RF_Init(void)
 {
 
@@ -438,13 +493,14 @@ static void MX_RF_Init(void)
   /* USER CODE BEGIN RF_Init 2 */
 
   /* USER CODE END RF_Init 2 */
+
 }
 
 /**
- * @brief RTC Initialization Function
- * @param None
- * @retval None
- */
+  * @brief RTC Initialization Function
+  * @param None
+  * @retval None
+  */
 static void MX_RTC_Init(void)
 {
 
@@ -457,7 +513,7 @@ static void MX_RTC_Init(void)
   /* USER CODE END RTC_Init 1 */
 
   /** Initialize RTC Only
-   */
+  */
   hrtc.Instance = RTC;
   hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
   hrtc.Init.AsynchPrediv = CFG_RTC_ASYNCH_PRESCALER;
@@ -472,7 +528,7 @@ static void MX_RTC_Init(void)
   }
 
   /** Enable the WakeUp
-   */
+  */
   if (HAL_RTCEx_SetWakeUpTimer_IT(&hrtc, 0, RTC_WAKEUPCLOCK_RTCCLK_DIV16) != HAL_OK)
   {
     Error_Handler();
@@ -480,13 +536,14 @@ static void MX_RTC_Init(void)
   /* USER CODE BEGIN RTC_Init 2 */
 
   /* USER CODE END RTC_Init 2 */
+
 }
 
 /**
- * @brief USART1 Initialization Function
- * @param None
- * @retval None
- */
+  * @brief USART1 Initialization Function
+  * @param None
+  * @retval None
+  */
 void MX_USART1_UART_Init(void)
 {
 
@@ -527,11 +584,12 @@ void MX_USART1_UART_Init(void)
   /* USER CODE BEGIN USART1_Init 2 */
 
   /* USER CODE END USART1_Init 2 */
+
 }
 
 /**
- * Enable DMA controller clock
- */
+  * Enable DMA controller clock
+  */
 static void MX_DMA_Init(void)
 {
 
@@ -546,13 +604,20 @@ static void MX_DMA_Init(void)
   /* DMA1_Channel2_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Channel2_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel2_IRQn);
+  /* DMA1_Channel3_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel3_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel3_IRQn);
+  /* DMAMUX1_OVR_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMAMUX1_OVR_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMAMUX1_OVR_IRQn);
+
 }
 
 /**
- * @brief GPIO Initialization Function
- * @param None
- * @retval None
- */
+  * @brief GPIO Initialization Function
+  * @param None
+  * @retval None
+  */
 static void MX_GPIO_Init(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -567,13 +632,13 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOE_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_4, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_4, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOE, GPIO_PIN_4, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : PB0 PB1 PB4 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_4;
+  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_4;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -596,9 +661,9 @@ static void MX_GPIO_Init(void)
 /* USER CODE END 4 */
 
 /**
- * @brief  This function is executed in case of error occurrence.
- * @retval None
- */
+  * @brief  This function is executed in case of error occurrence.
+  * @retval None
+  */
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
@@ -611,12 +676,12 @@ void Error_Handler(void)
 }
 #ifdef USE_FULL_ASSERT
 /**
- * @brief  Reports the name of the source file and the source line number
- *         where the assert_param error has occurred.
- * @param  file: pointer to the source file name
- * @param  line: assert_param error line source number
- * @retval None
- */
+  * @brief  Reports the name of the source file and the source line number
+  *         where the assert_param error has occurred.
+  * @param  file: pointer to the source file name
+  * @param  line: assert_param error line source number
+  * @retval None
+  */
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
