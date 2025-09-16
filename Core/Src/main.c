@@ -92,7 +92,23 @@ static void MX_RF_Init(void);
 #define BNO_RST_Pin GPIO_PIN_4
 #define BNO055_SYS_ERR 0x3A
 
+int _write(int le, char *ptr, int len)
 
+{
+
+int DataIdx;
+
+for(DataIdx = 0; DataIdx < len; DataIdx++)
+
+{
+
+ITM_SendChar(*ptr++);
+
+}
+
+return len;
+
+}
 
 /* USER CODE END 0 */
 
@@ -149,8 +165,6 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   unsigned long int main_loop_counter = 0;
-  UTIL_LPM_SetOffMode(1U, UTIL_LPM_DISABLE);
-  BNO055_Init();
   while (1)
   {
     /* USER CODE END WHILE */
@@ -164,12 +178,10 @@ int main(void)
     HAL_UART_Transmit(&huart1, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
     ///// debug for LED toggling
     LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_0);
+    printf("Hello World \n");
     // HAL_Delay(1000);
     // LL_GPIO_ResetOutputPin(GPIOB, LL_GPIO_PIN_0);
     // HAL_Delay(1000);
-    /// test BNO055
-    //BNO055_ReadEuler();
-    BNO055_ReadSensors();
     HAL_Delay(1000);
 
     //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -479,8 +491,8 @@ static void MX_GPIO_Init(void)
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
-  __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOE_CLK_ENABLE();
+  __HAL_RCC_GPIOA_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0|GPIO_PIN_1, GPIO_PIN_RESET);
