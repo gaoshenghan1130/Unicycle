@@ -92,186 +92,7 @@ static void MX_RF_Init(void);
 #define BNO_RST_Pin GPIO_PIN_4
 #define BNO055_SYS_ERR 0x3A
 
-void BNO055_HardwareReset(void)
-{
-  // 拉低 RESET
-  HAL_GPIO_WritePin(BNO_RST_GPIO_Port, BNO_RST_Pin, GPIO_PIN_RESET);
-  HAL_Delay(10); // 至少 10 ms
 
-  // 拉高，芯片上电
-  HAL_GPIO_WritePin(BNO_RST_GPIO_Port, BNO_RST_Pin, GPIO_PIN_SET);
-  HAL_Delay(700); // 等待芯片稳定
-
-}
-
-void BNO055_Init(void)
-{
-  UTIL_LPM_SetOffMode(1U, UTIL_LPM_DISABLE);
-
-  BNO055_HardwareReset();
-  HAL_Delay(700); // 上电稳定
-
-  // 1. 切 CONFIG_MODE
-  uint8_t mode = 0x00;
-  HAL_I2C_Mem_Write(&hi2c1, BNO055_ADDR, BNO055_OPR_MODE, I2C_MEMADD_SIZE_8BIT, &mode, 1, HAL_MAX_DELAY);
-  HAL_Delay(25);
-
-  // 2. 设置 Page 0
-  uint8_t page = 0x00;
-  if(HAL_I2C_Mem_Write(&hi2c1, BNO055_ADDR, BNO055_PAGE_ID, I2C_MEMADD_SIZE_8BIT, &page, 1, HAL_MAX_DELAY) != HAL_OK)
-  {
-    char msg[64];
-    sprintf(msg, "I2C Write Page failed!\r\n");
-    HAL_UART_Transmit(&huart1, msg, strlen(msg), HAL_MAX_DELAY);
-  }
-
-  // 3. 切 NDOF
-  mode = 0x0C;
-  HAL_I2C_Mem_Write(&hi2c1, BNO055_ADDR, BNO055_OPR_MODE, I2C_MEMADD_SIZE_8BIT, &mode, 1, HAL_MAX_DELAY);
-  HAL_Delay(50); // 等待寄存器生效
-
-  uint8_t mode_check = 0;
-  HAL_I2C_Mem_Read(&hi2c1, BNO055_ADDR, BNO055_OPR_MODE, I2C_MEMADD_SIZE_8BIT, &mode_check, 1, HAL_MAX_DELAY);
-
-  char oprmsg[32];
-  sprintf(oprmsg, "OPR_MODE readback=0x%02X\r\n", mode_check);
-  HAL_UART_Transmit(&huart1, (uint8_t *)oprmsg, strlen(oprmsg), HAL_MAX_DELAY);
-
-  // 4. 等待系统状态 = 3
-  uint8_t sys_stat = 0;
-  uint32_t timeout = HAL_GetTick() + 5000; // 最多等 5 秒
-
-    HAL_I2C_Mem_Read(&hi2c1, BNO055_ADDR, BNO055_SYS_STAT, I2C_MEMADD_SIZE_8BIT, &sys_stat, 1, HAL_MAX_DELAY);
-
-        // 读取 SYS_ERR 并打印
-    uint8_t sys_err = 0;
-    if (HAL_I2C_Mem_Read(&hi2c1, BNO055_ADDR, BNO055_SYS_ERR, I2C_MEMADD_SIZE_8BIT, &sys_err, 1, HAL_MAX_DELAY) == HAL_OK)
-    {
-        char msg[32];
-        sprintf(msg, "SYS_ERR=0x%02X\r\n", sys_err);
-        HAL_UART_Transmit(&huart1, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
-    }
-    else
-    {
-        char msg[32];
-        sprintf(msg, "Read SYS_ERR failed\r\n");
-        HAL_UART_Transmit(&huart1, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
-    }
-
-
-    HAL_Delay(700);
-    HAL_UART_Transmit(&huart1, (uint8_t *)".", 1, HAL_MAX_DELAY); // 打印等待点
-  
-
-  // 打印状态
-  char msg[64];
-  sprintf(msg, "BNO055 SYS_STAT: 0x%02X\r\n", sys_stat);
-  HAL_UART_Transmit(&huart1, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
-
-  // 5. 打印 CHIP_ID
-  uint8_t id = 0;
-  HAL_I2C_Mem_Read(&hi2c1, BNO055_ADDR, BNO055_CHIP_ID, I2C_MEMADD_SIZE_8BIT, &id, 1, HAL_MAX_DELAY);
-  sprintf(msg, "BNO055 CHIP_ID: 0x%02X\r\n", id);
-  HAL_UART_Transmit(&huart1, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
-}
-
-void BNO055_ReadSensors(void)
-{
-    char msg[128];
-
-    // 1. 读取原始加速度
-    uint8_t accel[6];
-    if(HAL_I2C_Mem_Read(&hi2c1, BNO055_ADDR, BNO055_ACCEL_RAW, I2C_MEMADD_SIZE_8BIT, accel, 6, HAL_MAX_DELAY) != HAL_OK)
-    {
-        HAL_UART_Transmit(&huart1, (uint8_t *)"Accel read failed!\r\n", 20, HAL_MAX_DELAY);
-        return;
-    }
-    int16_t ax = (int16_t)((accel[1] << 8) | accel[0]);
-    int16_t ay = (int16_t)((accel[3] << 8) | accel[2]);
-    int16_t az = (int16_t)((accel[5] << 8) | accel[4]);
-    sprintf(msg, "Accel Raw: X=%d, Y=%d, Z=%d\r\n", ax, ay, az);
-    HAL_UART_Transmit(&huart1, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
-
-    // 2. 读取原始陀螺仪
-    uint8_t gyro[6];
-    if(HAL_I2C_Mem_Read(&hi2c1, BNO055_ADDR, 0x14, I2C_MEMADD_SIZE_8BIT, gyro, 6, HAL_MAX_DELAY) != HAL_OK)
-    {
-        HAL_UART_Transmit(&huart1, (uint8_t *)"Gyro read failed!\r\n", 19, HAL_MAX_DELAY);
-        return;
-    }
-    int16_t gx = (int16_t)((gyro[1] << 8) | gyro[0]);
-    int16_t gy = (int16_t)((gyro[3] << 8) | gyro[2]);
-    int16_t gz = (int16_t)((gyro[5] << 8) | gyro[4]);
-    sprintf(msg, "Gyro Raw: X=%d, Y=%d, Z=%d\r\n", gx, gy, gz);
-    HAL_UART_Transmit(&huart1, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
-}
-
-void BNO055_ReadEuler(void)
-{
-  char msg[128];
-
-  // 1. 读取原始加速度
-  uint8_t accel[6];
-  if (HAL_I2C_Mem_Read(&hi2c1, BNO055_ADDR, BNO055_ACCEL_RAW, I2C_MEMADD_SIZE_8BIT, accel, 6, HAL_MAX_DELAY) != HAL_OK)
-  {
-    HAL_UART_Transmit(&huart1, (uint8_t *)"Accel read failed!\r\n", 20, HAL_MAX_DELAY);
-    return;
-  }
-  sprintf(msg, "Accel Raw: %02X %02X %02X %02X %02X %02X\r\n",
-          accel[0], accel[1], accel[2], accel[3], accel[4], accel[5]);
-  //HAL_UART_Transmit(&huart1, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
-
-  // 2. 检查系统状态，确保融合引擎就绪
-  uint8_t sys_stat;
-  HAL_I2C_Mem_Read(&hi2c1, BNO055_ADDR, BNO055_SYS_STAT, I2C_MEMADD_SIZE_8BIT, &sys_stat, 1, HAL_MAX_DELAY);
-  if (sys_stat != 3) // 3 = system running
-  {
-    char msg[] = "Fusion engine not ready\r\n";
-    HAL_UART_Transmit(&huart1, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
-    char err_msg[64];
-    sprintf(err_msg, "SYS_STAT=0x%02X\r\n", sys_stat);
-    HAL_UART_Transmit(&huart1, (uint8_t *)err_msg, strlen(err_msg), HAL_MAX_DELAY);
-  }
-
-  // 读取校准状态
-uint8_t cal;
-HAL_I2C_Mem_Read(&hi2c1, BNO055_ADDR, 0x35, I2C_MEMADD_SIZE_8BIT, &cal, 1, HAL_MAX_DELAY);
-char cmsg[32];
- uint8_t sys_cal  = (cal >> 6) & 0x03;
-  uint8_t gyro_cal = (cal >> 4) & 0x03;
-  uint8_t accel_cal = (cal >> 2) & 0x03;
-  uint8_t mag_cal   = (cal >> 0) & 0x03;
-sprintf(cmsg, "CALIB_STAT=0x%02X (Sys:%d Gyro:%d Accel:%d Mag:%d)\r\n", cal, sys_cal, gyro_cal, accel_cal, mag_cal);
-HAL_UART_Transmit(&huart1, (uint8_t *)cmsg, strlen(cmsg), HAL_MAX_DELAY);
-
-// 读取当前 OPR_MODE
-uint8_t opr;
-HAL_I2C_Mem_Read(&hi2c1, BNO055_ADDR, BNO055_OPR_MODE,
-                 I2C_MEMADD_SIZE_8BIT, &opr, 1, HAL_MAX_DELAY);
-sprintf(msg, "OPR_MODE=0x%02X\r\n", opr);
-HAL_UART_Transmit(&huart1, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
-
-  // 3. 读取 Euler 角
-  uint8_t eul[6];
-  if (HAL_I2C_Mem_Read(&hi2c1, BNO055_ADDR, BNO055_EULER, I2C_MEMADD_SIZE_8BIT, eul, 6, HAL_MAX_DELAY) != HAL_OK)
-  {
-    HAL_UART_Transmit(&huart1, (uint8_t *)"Euler read failed!\r\n", 21, HAL_MAX_DELAY);
-    return;
-  }
-
-
-  int16_t heading = (int16_t)((eul[1] << 8) | eul[0]);
-  int16_t roll = (int16_t)((eul[3] << 8) | eul[2]);
-  int16_t pitch = (int16_t)((eul[5] << 8) | eul[4]);
-
-  float heading_deg = heading / 16.0f;
-  float roll_deg = roll / 16.0f;
-  float pitch_deg = pitch / 16.0f;
-
-  sprintf(msg, sizeof(msg), "Heading: %.2f, Roll: %.2f, Pitch: %.2f\r\n",
-                     heading_deg, roll_deg, pitch_deg);
-  HAL_UART_Transmit(&huart1, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
-}
 
 /* USER CODE END 0 */
 
@@ -342,7 +163,7 @@ int main(void)
     sprintf(msg, "Main loop count: %lu\r\n", main_loop_counter++);
     HAL_UART_Transmit(&huart1, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
     ///// debug for LED toggling
-    // LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_0);
+    LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_0);
     // HAL_Delay(1000);
     // LL_GPIO_ResetOutputPin(GPIOB, LL_GPIO_PIN_0);
     // HAL_Delay(1000);
@@ -640,9 +461,6 @@ static void MX_DMA_Init(void)
   /* DMA1_Channel3_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Channel3_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel3_IRQn);
-  /* DMAMUX1_OVR_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMAMUX1_OVR_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMAMUX1_OVR_IRQn);
 
 }
 
@@ -665,13 +483,13 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOE_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_4, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0|GPIO_PIN_1, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOE, GPIO_PIN_4, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : PB0 PB1 PB4 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_4;
+  /*Configure GPIO pins : PB0 PB1 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
