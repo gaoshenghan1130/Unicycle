@@ -175,6 +175,37 @@ void BNO055_Init(void)
   HAL_UART_Transmit(&huart1, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
 }
 
+void BNO055_ReadSensors(void)
+{
+    char msg[128];
+
+    // 1. 读取原始加速度
+    uint8_t accel[6];
+    if(HAL_I2C_Mem_Read(&hi2c1, BNO055_ADDR, BNO055_ACCEL_RAW, I2C_MEMADD_SIZE_8BIT, accel, 6, HAL_MAX_DELAY) != HAL_OK)
+    {
+        HAL_UART_Transmit(&huart1, (uint8_t *)"Accel read failed!\r\n", 20, HAL_MAX_DELAY);
+        return;
+    }
+    int16_t ax = (int16_t)((accel[1] << 8) | accel[0]);
+    int16_t ay = (int16_t)((accel[3] << 8) | accel[2]);
+    int16_t az = (int16_t)((accel[5] << 8) | accel[4]);
+    sprintf(msg, "Accel Raw: X=%d, Y=%d, Z=%d\r\n", ax, ay, az);
+    HAL_UART_Transmit(&huart1, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
+
+    // 2. 读取原始陀螺仪
+    uint8_t gyro[6];
+    if(HAL_I2C_Mem_Read(&hi2c1, BNO055_ADDR, 0x14, I2C_MEMADD_SIZE_8BIT, gyro, 6, HAL_MAX_DELAY) != HAL_OK)
+    {
+        HAL_UART_Transmit(&huart1, (uint8_t *)"Gyro read failed!\r\n", 19, HAL_MAX_DELAY);
+        return;
+    }
+    int16_t gx = (int16_t)((gyro[1] << 8) | gyro[0]);
+    int16_t gy = (int16_t)((gyro[3] << 8) | gyro[2]);
+    int16_t gz = (int16_t)((gyro[5] << 8) | gyro[4]);
+    sprintf(msg, "Gyro Raw: X=%d, Y=%d, Z=%d\r\n", gx, gy, gz);
+    HAL_UART_Transmit(&huart1, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
+}
+
 void BNO055_ReadEuler(void)
 {
   char msg[128];
@@ -195,8 +226,9 @@ void BNO055_ReadEuler(void)
   HAL_I2C_Mem_Read(&hi2c1, BNO055_ADDR, BNO055_SYS_STAT, I2C_MEMADD_SIZE_8BIT, &sys_stat, 1, HAL_MAX_DELAY);
   if (sys_stat != 3) // 3 = system running
   {
-    HAL_UART_Transmit(&huart1, (uint8_t *)"Fusion engine not ready\r\n", 27, HAL_MAX_DELAY);
-    char err_msg[32];
+    char msg[] = "Fusion engine not ready\r\n";
+    HAL_UART_Transmit(&huart1, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
+    char err_msg[64];
     sprintf(err_msg, "SYS_STAT=0x%02X\r\n", sys_stat);
     HAL_UART_Transmit(&huart1, (uint8_t *)err_msg, strlen(err_msg), HAL_MAX_DELAY);
   }
@@ -236,9 +268,9 @@ HAL_UART_Transmit(&huart1, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
   float roll_deg = roll / 16.0f;
   float pitch_deg = pitch / 16.0f;
 
-  int len = snprintf(msg, sizeof(msg), "Heading: %.2f, Roll: %.2f, Pitch: %.2f\r\n",
+  sprintf(msg, sizeof(msg), "Heading: %.2f, Roll: %.2f, Pitch: %.2f\r\n",
                      heading_deg, roll_deg, pitch_deg);
-  HAL_UART_Transmit(&huart1, (uint8_t *)msg, len, HAL_MAX_DELAY);
+  HAL_UART_Transmit(&huart1, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
 }
 
 /* USER CODE END 0 */
@@ -310,18 +342,19 @@ int main(void)
     sprintf(msg, "Main loop count: %lu\r\n", main_loop_counter++);
     HAL_UART_Transmit(&huart1, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
     ///// debug for LED toggling
-    LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_0);
-    HAL_Delay(1000);
-    LL_GPIO_ResetOutputPin(GPIOB, LL_GPIO_PIN_0);
-    HAL_Delay(1000);
+    // LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_0);
+    // HAL_Delay(1000);
+    // LL_GPIO_ResetOutputPin(GPIOB, LL_GPIO_PIN_0);
+    // HAL_Delay(1000);
     /// test BNO055
-    BNO055_ReadEuler();
+    //BNO055_ReadEuler();
+    BNO055_ReadSensors();
+    HAL_Delay(1000);
 
     //////////////////////////////////////////////////////////////////////////////////////////////////
     //// Main loop ///////////////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////
 
-    HAL_I2C_Master_Receive(&hi2c1, 0xD0, (uint8_t *)msg, 4, HAL_MAX_DELAY); // read 4 bytes from the device with address 0x68
   }
   /* USER CODE END 3 */
 }
