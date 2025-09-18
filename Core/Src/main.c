@@ -28,6 +28,7 @@
 #include "hw_conf.h"
 #include "Logger.h"
 #include "stm32_lpm.h"
+#include <stdio.h>
 
 /* USER CODE END Includes */
 
@@ -78,20 +79,6 @@ static void MX_RF_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-#include <stdio.h>
-
-#define BNO055_ADDR (0x28 << 1)
-#define BNO055_ADDR (0x28 << 1) // 默认 7-bit 地址左移1
-#define BNO055_CHIP_ID 0x00
-#define BNO055_PAGE_ID 0x07
-#define BNO055_OPR_MODE 0x3D
-#define BNO055_EULER 0x1A
-#define BNO055_ACCEL_RAW 0x08
-#define BNO055_SYS_STAT 0x39
-#define BNO_RST_GPIO_Port GPIOB
-#define BNO_RST_Pin GPIO_PIN_4
-#define BNO055_SYS_ERR 0x3A
-
 int _write(int le, char *ptr, int len)
 
 {
@@ -109,7 +96,6 @@ ITM_SendChar(*ptr++);
 return len;
 
 }
-
 /* USER CODE END 0 */
 
 /**
@@ -164,6 +150,7 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+
   unsigned long int main_loop_counter = 0;
   while (1)
   {
@@ -171,18 +158,23 @@ int main(void)
     MX_APPE_Process();
 
     /* USER CODE BEGIN 3 */
-    char msg[64]; // buffer for the message
+    // char msg[64]; // buffer for the message
 
     /// debug with UART
-    sprintf(msg, "Main loop count: %lu\r\n", main_loop_counter++);
-    HAL_UART_Transmit(&huart1, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
+    // sprintf(msg, "Main loop count: %lu\r\n", main_loop_counter++);
+    char buf[5] = {0};
+    HAL_UART_Receive(&huart1, buf, sizeof(buf), 500);
+    printf("Received data: ");
+    for (int i = 0; i < 5; i++) {
+        printf("%c", buf[i]);
+    }
+    printf("\r\n");
+    printf("Main loop count: %lu\r\n", main_loop_counter++);
     ///// debug for LED toggling
-    LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_0);
-    printf("Hello World \n");
+    //LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_0);
     // HAL_Delay(1000);
     // LL_GPIO_ResetOutputPin(GPIOB, LL_GPIO_PIN_0);
-    // HAL_Delay(1000);
-    HAL_Delay(1000);
+    HAL_Delay(100);
 
     //////////////////////////////////////////////////////////////////////////////////////////////////
     //// Main loop ///////////////////////////////////////////////////////////////////////////////////
@@ -421,7 +413,7 @@ void MX_USART1_UART_Init(void)
 
   /* USER CODE END USART1_Init 1 */
   huart1.Instance = USART1;
-  huart1.Init.BaudRate = 19200;
+  huart1.Init.BaudRate = 115200;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
   huart1.Init.Parity = UART_PARITY_NONE;
