@@ -137,7 +137,6 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_RTC_Init();
-  MX_I2C1_Init();
   MX_RF_Init();
   /* USER CODE BEGIN 2 */
 
@@ -162,19 +161,19 @@ int main(void)
 
     /// debug with UART
     // sprintf(msg, "Main loop count: %lu\r\n", main_loop_counter++);
-    char buf[5] = {0};
-    HAL_UART_Receive(&huart1, buf, sizeof(buf), 500);
-    printf("Received data: ");
-    for (int i = 0; i < 5; i++) {
-        printf("%c", buf[i]);
-    }
-    printf("\r\n");
-    printf("Main loop count: %lu\r\n", main_loop_counter++);
-    ///// debug for LED toggling
-    //LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_0);
+    //char buf[5] = {0};
+    //HAL_UART_Receive(&huart1, buf, sizeof(buf), 500);
+    //printf("Received data: ");
+    // for (int i = 0; i < 5; i++) {
+    //     printf("%c", buf[i]);
+    // }
+    // printf("\r\n");
+    // printf("Main loop count: %lu\r\n", main_loop_counter++);
+    // // debug for LED toggling
+    LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_0);
     // HAL_Delay(1000);
     // LL_GPIO_ResetOutputPin(GPIOB, LL_GPIO_PIN_0);
-    HAL_Delay(100);
+    // HAL_Delay(100);
 
     //////////////////////////////////////////////////////////////////////////////////////////////////
     //// Main loop ///////////////////////////////////////////////////////////////////////////////////

@@ -118,9 +118,7 @@ void MX_APPE_Init(void)
 
 /* USER CODE BEGIN APPE_Init_1 */
 
-#include "../../Core/Inc/Logger.h"
-#include "../../Core/Inc/main.h"
-  extern UART_HandleTypeDef huart1;
+  APPD_Init();         /**< Initialize for debug features */
   
 
 /* USER CODE END APPE_Init_1 */
