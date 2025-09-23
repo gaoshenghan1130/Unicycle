@@ -2,11 +2,16 @@
     "files.associations": {
         "*.embeddedhtml": "html",
         "main.h": "c",
-        "stm32wbxx_hal_conf.h": "c",
-        "mn.h": "c",
-        "stm32wbxx_hal.h": "c",
-        "stm32wbxx_hal_dma.h": "c",
-        "stm32wbxx_hal_def.h": "c",
-        "stm32wbxx.h": "c"
+        "app_ble.h": "c",
+        "ble.h": "c",
+        "dbg_trace.h": "c",
+        "ble_std.h": "c",
+        "ble_legacy.h": "c",
+        "ble_defs.h": "c",
+        "ble_gap_aci.h": "c",
+        "custom_stm.h": "c",
+        "common_blesvc.h": "c",
+        "ble_common.h": "c",
+        "logger.h": "c"
     }
 }
