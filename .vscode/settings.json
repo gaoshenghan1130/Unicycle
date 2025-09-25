@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "*.embeddedhtml": "html",
+        "*.ejs": "html",
         "main.h": "c",
         "app_ble.h": "c",
         "ble.h": "c",
@@ -12,6 +13,7 @@
         "custom_stm.h": "c",
         "common_blesvc.h": "c",
         "ble_common.h": "c",
-        "logger.h": "c"
+        "logger.h": "c",
+        "can.h": "c"
     }
 }
