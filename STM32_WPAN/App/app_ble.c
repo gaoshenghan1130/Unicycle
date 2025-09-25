@@ -403,30 +403,6 @@ void APP_BLE_Init(void)
 
   /* USER CODE BEGIN APP_BLE_Init_2 */
 
-
-  printf("APP_BLE_Init\r\n");
-  LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_0);
-  tBleStatus ble_status;
-  const uint8_t local_name[] = {AD_TYPE_COMPLETE_LOCAL_NAME, 'W','B','_','D','E','M','O'};
-  printf("Initialize status begin\r\n");
-  ble_status = aci_gap_set_discoverable(ADV_IND,
-                                    0, 0, /* undirected advertisement */
-                                    GAP_PUBLIC_ADDR,
-                                    NO_WHITE_LIST_USE,
-                                    sizeof(local_name), local_name,
-                                    0, NULL, /* No UUID restriction */
-                                    0, 0);   /* not manufacturer */
-  printf("Aci Discoverable\r\n");
-                                  
-  if(ble_status != BLE_STATUS_SUCCESS)
-  {
-    APP_DBG_MSG("Broadcast failed\n", ble_status);
-  }
-  else
-  {
-    APP_DBG_MSG("Broadcast success\n", ble_status);
-  }
-
   /* USER CODE END APP_BLE_Init_2 */
 
   return;

@@ -18,6 +18,7 @@
         "stm32wbxx_hal_conf.h": "c",
         "stdlib.h": "c",
         "stm32wbxx_hal_gpio.h": "c",
-        "stm32wbxx_hal.h": "c"
+        "stm32wbxx_hal.h": "c",
+        "hw_if.h": "c"
     }
 }

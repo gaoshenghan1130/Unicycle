@@ -1,7 +1,35 @@
-#include "CAN/can.h"
+#include "../../Inc/CAN/can.h"
 
 char* bufferReceive[64];
 char* bufferTransmit[64];
+
+extern SPI_HandleTypeDef hspi1;
+
+
+void MY_CAN_Init(void)
+{
+    // Initialize GPIO for CAN (SPI) communication
+
+    // set NSS pin high, while transmitting it should be low
+    HAL_GPIO_WritePin(CAN_NSS_GPIO_PORT, CAN_NSS_PIN, GPIO_PIN_SET);
+    
+
+  printf("CAN Initialized\r\n");
+}
+
+void MY_CAN_Transmit(char* data, uint8_t len)
+{
+    // Transmit data over CAN (SPI) bus
+    // Pull NSS low to select the CAN transceiver
+    HAL_GPIO_WritePin(CAN_NSS_GPIO_PORT, CAN_NSS_PIN, GPIO_PIN_RESET);
+
+    // Pull NSS high to deselect the CAN transceiver
+    HAL_GPIO_WritePin(CAN_NSS_GPIO_PORT, CAN_NSS_PIN, GPIO_PIN_SET);
+
+    printf("CAN Data Transmitted: %s\r\n", data);
+}
+
+
 
 // callback when the interrupt pin is triggered (should receive a message)
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
