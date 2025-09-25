@@ -18,7 +18,7 @@ Main Board: STM32WB55RGV6
 
 ### Hollow Motor (CAN)
 
-CAN protocol follows the original protocol used by the manufacturer of the hollow motor (see [here](./中空系列电机控..明1%202.pdf), the English version is [here](./中空系列电机控..明1.pdf)). 
+CAN protocol follows the original protocol used by the manufacturer of the hollow motor (see [here](./Motor/中空系列电机控..明1%202.pdf), the English version is [here](./Motor/中空系列电机控..明1.pdf)). 
 
 ### Linear Motor (Undecided)
 
