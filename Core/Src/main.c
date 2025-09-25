@@ -26,7 +26,6 @@
 #include "svc_ctl.h"
 #include "hw_if.h"
 #include "hw_conf.h"
-#include "Logger.h"
 #include "stm32_lpm.h"
 #include <stdio.h>
 

@@ -2,6 +2,10 @@
 #define CAN_H
 
 #include <stdlib.h>
+#include <stdint.h>
+#include <stdio.h>
+#include "stm32wbxx_hal.h"
+
 
 #define INTERRUPT_PIN        GPIO_PIN_0
 #define INTERRUPT_GPIO_PORT  GPIOA
@@ -9,10 +13,10 @@
 #define CAN_NSS_GPIO_PORT  GPIOA
 
 
-char* bufferReceive[64];
-char* bufferTransmit[64];
+extern char* bufferReceive[64];
+extern char* bufferTransmit[64];
 
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin);
 
 
 

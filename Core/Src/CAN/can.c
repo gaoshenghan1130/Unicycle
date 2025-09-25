@@ -1,5 +1,7 @@
 #include "CAN/can.h"
 
+char* bufferReceive[64];
+char* bufferTransmit[64];
 
 // callback when the interrupt pin is triggered (should receive a message)
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)

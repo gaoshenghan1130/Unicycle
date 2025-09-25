@@ -269,11 +269,6 @@ void APP_BLE_Init(void)
 #endif /* RADIO_ACTIVITY_EVENT != 0 */
   /* USER CODE BEGIN APP_BLE_Init_1 */
 
-#include "../../Core/Inc/Logger.h"
-#include "../../Core/Inc/main.h"
-  extern UART_HandleTypeDef huart1;
-  UART_LOG("Entered APP_BLE_Init\r\n");
-
   /* USER CODE END APP_BLE_Init_1 */
   SHCI_C2_Ble_Init_Cmd_Packet_t ble_init_cmd_packet =
   {
@@ -409,11 +404,11 @@ void APP_BLE_Init(void)
   /* USER CODE BEGIN APP_BLE_Init_2 */
 
 
-  UART_LOG("APP_BLE_Init\r\n");
+  printf("APP_BLE_Init\r\n");
   LL_GPIO_SetOutputPin(GPIOB, LL_GPIO_PIN_0);
   tBleStatus ble_status;
   const uint8_t local_name[] = {AD_TYPE_COMPLETE_LOCAL_NAME, 'W','B','_','D','E','M','O'};
-  UART_LOG("Initialize status begin\r\n");
+  printf("Initialize status begin\r\n");
   ble_status = aci_gap_set_discoverable(ADV_IND,
                                     0, 0, /* undirected advertisement */
                                     GAP_PUBLIC_ADDR,
@@ -421,7 +416,7 @@ void APP_BLE_Init(void)
                                     sizeof(local_name), local_name,
                                     0, NULL, /* No UUID restriction */
                                     0, 0);   /* not manufacturer */
-  UART_LOG("Aci Discoverable\r\n");
+  printf("Aci Discoverable\r\n");
                                   
   if(ble_status != BLE_STATUS_SUCCESS)
   {
