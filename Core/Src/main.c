@@ -28,13 +28,11 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
-// usart
-#include "usart.h"
-
 #include <stdio.h>
 #include "stm32_seq.h"
 #include "stm32_lpm.h"
+// usart
+#include "usart.h"
 // BLE
 #include "app_ble.h"
 #include "svc_ctl.h"
@@ -42,6 +40,7 @@
 #include "hw_conf.h"
 // CAN
 #include "CAN/can.h"
+#include "CAN/mcp2515.h"
 
 /* USER CODE END Includes */
 
@@ -135,8 +134,8 @@ int main(void)
   HAL_Delay(100);// wait for SWV, sometimes it doesn't immediately work
 
   MX_USART1_UART_Init();
-  printf("USART1 Initialized\r\n");
   MY_CAN_Init();
+
 
   /* USER CODE END 2 */
 
@@ -145,14 +144,15 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-
-  unsigned long int main_loop_counter = 0;
   while (1)
   {
     /* USER CODE END WHILE */
     MX_APPE_Process();
 
     /* USER CODE BEGIN 3 */
+
+    MY_CAN_Transmit("Hello CAN", 9);
+    HAL_Delay(10);
 
     //////////////////////////////////////////////////////////////////////////////////////////////////
     //// Main loop ///////////////////////////////////////////////////////////////////////////////////

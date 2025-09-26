@@ -18,7 +18,6 @@
 extern char* bufferReceive[64];
 extern char* bufferTransmit[64];
 
-
 void MY_CAN_Init(void);
 void MY_CAN_Transmit(char* data, uint8_t len);
 

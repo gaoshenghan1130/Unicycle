@@ -1,4 +1,5 @@
 #include "../../Inc/CAN/can.h"
+#include "../../Inc/CAN/mcp2515.h"
 
 char* bufferReceive[64];
 char* bufferTransmit[64];
@@ -12,8 +13,7 @@ void MY_CAN_Init(void)
 
     // set NSS pin high, while transmitting it should be low
     HAL_GPIO_WritePin(CAN_NSS_GPIO_PORT, CAN_NSS_PIN, GPIO_PIN_SET);
-    
-
+    MCP2515_Init();
   printf("CAN Initialized\r\n");
 }
 
@@ -23,10 +23,10 @@ void MY_CAN_Transmit(char* data, uint8_t len)
     // Pull NSS low to select the CAN transceiver
     HAL_GPIO_WritePin(CAN_NSS_GPIO_PORT, CAN_NSS_PIN, GPIO_PIN_RESET);
 
+    HAL_SPI_Transmit(&hspi1, (uint8_t*)data, len, HAL_MAX_DELAY);
+
     // Pull NSS high to deselect the CAN transceiver
     HAL_GPIO_WritePin(CAN_NSS_GPIO_PORT, CAN_NSS_PIN, GPIO_PIN_SET);
-
-    printf("CAN Data Transmitted: %s\r\n", data);
 }
 
 

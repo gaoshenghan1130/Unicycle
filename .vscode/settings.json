@@ -19,6 +19,9 @@
         "stdlib.h": "c",
         "stm32wbxx_hal_gpio.h": "c",
         "stm32wbxx_hal.h": "c",
-        "hw_if.h": "c"
+        "hw_if.h": "c",
+        "spi.h": "c",
+        "stm32_seq.h": "c",
+        "mcp2515.h": "c"
     }
 }

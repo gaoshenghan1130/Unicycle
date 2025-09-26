@@ -58,6 +58,7 @@ Dma.USART1_TX.0.SyncPolarity=HAL_DMAMUX_SYNC_NO_EVENT
 Dma.USART1_TX.0.SyncRequestNumber=1
 Dma.USART1_TX.0.SyncSignalID=NONE
 File.Version=6
+GPIO.groupedBy=Group By Peripherals
 I2C1.IPParameters=Timing
 I2C1.Timing=0x00B07CB4
 KeepUserPlacement=false
