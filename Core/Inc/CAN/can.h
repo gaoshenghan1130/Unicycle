@@ -5,14 +5,14 @@
 #include <stdint.h>
 #include <stdio.h>
 #include "stm32wbxx_hal.h"
+#include "mcp2515.h"
 
 // check document in ./Doc/Com/CAN_Bus.md for more details about pinout
 
 
 #define INTERRUPT_PIN        GPIO_PIN_0
 #define INTERRUPT_GPIO_PORT  GPIOA
-#define CAN_NSS_PIN        GPIO_PIN_5
-#define CAN_NSS_GPIO_PORT  GPIOA
+
 
 
 extern char* bufferReceive[64];
