@@ -12,8 +12,7 @@
 
 #define INTERRUPT_PIN        GPIO_PIN_0
 #define INTERRUPT_GPIO_PORT  GPIOA
-
-
+#define MOTOR_DEFAULT_ID 0x000
 
 extern char* bufferReceive[64];
 extern char* bufferTransmit[64];
@@ -22,6 +21,7 @@ typedef struct {
     float position_deg;   // position, degrees
     float velocity_rad;   // velocity, rad/s
     float torque_A;       // torque, A(current)
+    bool updated;        // whether this feedback is updated
 } MotorFeedback;
 
 void Motor_Init(uint8_t motor_id);

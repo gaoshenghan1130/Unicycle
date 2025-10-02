@@ -135,8 +135,7 @@ int main(void)
   HAL_Delay(100);// wait for SWV, sometimes it doesn't immediately work
 
   MX_USART1_UART_Init();
-  MY_CAN_Init();
-  Motor_Init(1); // initialize motor with CAN ID 1
+  Motor_Init(0); // initialize motor with CAN ID 1
 
 
   /* USER CODE END 2 */
@@ -150,15 +149,16 @@ int main(void)
   {
     /* USER CODE END WHILE */
     MX_APPE_Process();
+    Motor_SendTorque(MOTOR_DEFAULT_ID, 1.0f, 20.0f); // 0A torque
 
     /* USER CODE BEGIN 3 */
 
-    Motor_SendTorque(1, 5.0f, 20.0f); // send torque command to motor with CAN ID 1, torque=5A, max torque=20A
+    //Motor_SendTorque(1, 5.0f, 20.0f); // send torque command to motor with CAN ID 1, torque=5A, max torque=20A
     HAL_Delay(10);
-    printf("Motor Feedback: pos=%.2f deg, vel=%.2f rad/s, torque=%.2f A\r\n",
-           motor_feedback.position_deg,
-           motor_feedback.velocity_rad,
-           motor_feedback.torque_A);
+    // printf("Motor Feedback: pos=%.2f deg, vel=%.2f rad/s, torque=%.2f A\r\n",
+    //        motor_feedback.position_deg,
+    //        motor_feedback.velocity_rad,
+    //        motor_feedback.torque_A);
     //////////////////////////////////////////////////////////////////////////////////////////////////
     //// Main loop ///////////////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////
