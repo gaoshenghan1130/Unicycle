@@ -1,10 +1,20 @@
 #include "../../Inc/CAN/can.h"
 #include "../../Inc/CAN/mcp2515.h"
+#include <stdint.h>
+#include <stdio.h>
 
 char *bufferReceive[64];
 char *bufferTransmit[64];
 
+volatile MotorFeedback motor_feedback; // only have one motor for now
+
 extern SPI_HandleTypeDef hspi1;
+
+void MY_CAN_Init(void);
+void MY_CAN_Transmit(uint8_t *data, uint8_t len, uint8_t can_id);
+void Motor_Init(uint8_t motor_id);
+void Motor_SendTorque(uint16_t can_id, float torque, float torque_max);
+MotorFeedback Motor_ParseFeedback(uint8_t *data, float Pmax, float Vmax, float Imax);
 
 void MY_CAN_Init(void)
 {
@@ -71,33 +81,120 @@ void MY_CAN_Init(void)
   printf("CAN Initialized\r\n");
 }
 
-void MY_CAN_Transmit(char *data, uint8_t len)
+void MY_CAN_Transmit(uint8_t *data, uint8_t len, uint8_t can_id)
 {
   uint8_t idReg[4];
 
-  // 标准帧 ID = 0x100
-  idReg[0] = 0x20; // SIDH = ID[10:3]
-  idReg[1] = 0x00; // SIDL = ID[2:0] << 5
-  idReg[2] = 0x00; // EID8
-  idReg[3] = 0x00; // EID0
+  // Standard ID 0x100
+  idReg[0] = (uint8_t)(can_id >> 3);          // SIDH = ID[10:3]
+  idReg[1] = (uint8_t)((can_id & 0x07) << 5); // SIDL = ID[2:0] << 5
+  idReg[2] = 0x00;                            // EID8
+  idReg[3] = 0x00;                            // EID0
 
-  uint8_t dlc = len > 8 ? 8 : len; // DLC 最大 8 字节
+  uint8_t dlc = len > 8 ? 8 : len; // DLC max 8 bytes
 
-  // 使用库函数加载 TXB0
+  // use library function to load the transmit buffer
   MCP2515_LoadTxSequence(MCP2515_LOAD_TXB0SIDH, idReg, dlc, data);
 
-  // 请求发送 TXB0
+  // request to send the message
   MCP2515_RequestToSend(MCP2515_RTS_TX0);
 
   printf("CAN frame sent: ID=0x100, %d bytes\r\n", dlc);
 }
+
 // callback when the interrupt pin is triggered (should receive a message)
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
   if (GPIO_Pin == INTERRUPT_PIN)
   {
     printf("CAN Interrupt Triggered\r\n");
-    // Handle CAN interrupt
-    // Add your CAN interrupt handling code here
+    motor_feedback = Motor_ParseFeedback((uint8_t*)bufferReceive, 360.0f, 100.0f, 20.0f);
   }
+}
+
+///// Motor Message Senders //////////////////////////////////////////////////////////////////////////////////
+
+void Motor_Init(uint8_t motor_id)
+{
+  uint8_t data[8];
+
+  // 0xFF..FE is used to set position to zero
+  for (int i = 0; i < 8; i++)
+    data[i] = 0xFF;
+  data[7] = 0xFE;
+  MY_CAN_Transmit(data, 8, motor_id);
+  printf("Motor[%d]: position set to zero.\r\n", motor_id);
+
+
+  // 0xFF..FA is used to set to torque mode
+  for (int i = 0; i < 8; i++)
+    data[i] = 0xFF;
+  data[7] = 0xFA;
+  MY_CAN_Transmit(data, 8, motor_id);
+  printf("Motor[%d]: set to torque mode.\r\n", motor_id);
+
+  // // 2. extended mode, usually not used
+  // if (use_extended_mode)
+  // {
+  //     for (int i = 0; i < 8; i++) data[i] = 0x00;
+  //     MY_CAN_Transmit(data, 8, motor_id);
+  //     printf("Motor[%d]: switched to extended mode.\r\n", motor_id);
+  // }
+
+  // 3. Start the motor using 0xFF..FC
+  for (int i = 0; i < 8; i++)
+    data[i] = 0xFF;
+  data[7] = 0xFC;
+  MY_CAN_Transmit(data, 8, motor_id);
+  printf("Motor[%d]: started.\r\n", motor_id);
+}
+
+// torque: expected torque value (A or Nm)
+// torque_max: full scale torque value (A or Nm)
+void Motor_SendTorque(uint16_t can_id, float torque, float torque_max)
+{
+    uint8_t data[8] = {0};
+
+    // 1. 限幅
+    if (torque > torque_max) torque = torque_max;
+    if (torque < -torque_max) torque = -torque_max;
+
+    // 2. transform to 12-bit code
+    // [-torque_max, torque_max] → [0x000, 0xFFF] ，中点 0x800
+    int16_t torque_code = (int16_t)((torque / torque_max) * 0x800 + 0x800);
+
+    if (torque_code < 0) torque_code = 0;
+    if (torque_code > 0xFFF) torque_code = 0xFFF;
+
+    // 3. fill data array
+    data[6] = (uint8_t)(torque_code >> 8) & 0x0F;  // the high 4 bits of torque
+    data[7] = (uint8_t)(torque_code & 0xFF);       // the low 8 bits of torque
+
+    // 4. 发送
+    MY_CAN_Transmit(data, 8, can_id);
+
+    printf("Send torque=%.2f (code=0x%03X) to motor (CAN ID=0x%03X)\n", 
+           torque, torque_code, can_id);
+}
+
+MotorFeedback Motor_ParseFeedback(uint8_t *data, float Pmax, float Vmax, float Imax)
+{
+    MotorFeedback fb;
+    uint16_t pos_code, vel_code, torque_code;
+
+    // 位置：16bit
+    pos_code = ((uint16_t)data[1] << 8) | data[2];
+
+    // 速度：12bit
+    vel_code = ((uint16_t)data[3] << 8) | (data[4] >> 4);
+
+    // 力矩：12bit
+    torque_code = (((uint16_t)(data[4] & 0x0F)) << 8) | data[5];
+
+    // 解码
+    fb.position_deg = ((int32_t)pos_code - 0x8000) / 32768.0f * 360.0f * Pmax;
+    fb.velocity_rad = ((int32_t)vel_code - 0x800) / 2048.0f * Vmax;
+    fb.torque_A     = ((int32_t)torque_code - 0x800) / 2048.0f * Imax;
+
+    return fb;
 }

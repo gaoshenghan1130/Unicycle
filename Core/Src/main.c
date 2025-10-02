@@ -62,6 +62,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+extern MotorFeedback motor_feedback;
 
 /* USER CODE END PV */
 
@@ -135,6 +136,7 @@ int main(void)
 
   MX_USART1_UART_Init();
   MY_CAN_Init();
+  Motor_Init(1); // initialize motor with CAN ID 1
 
 
   /* USER CODE END 2 */
@@ -151,9 +153,12 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-    MY_CAN_Transmit("Hello CAN", 9);
+    Motor_SendTorque(1, 5.0f, 20.0f); // send torque command to motor with CAN ID 1, torque=5A, max torque=20A
     HAL_Delay(10);
-
+    printf("Motor Feedback: pos=%.2f deg, vel=%.2f rad/s, torque=%.2f A\r\n",
+           motor_feedback.position_deg,
+           motor_feedback.velocity_rad,
+           motor_feedback.torque_A);
     //////////////////////////////////////////////////////////////////////////////////////////////////
     //// Main loop ///////////////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////

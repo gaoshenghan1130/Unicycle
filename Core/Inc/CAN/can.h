@@ -18,11 +18,13 @@
 extern char* bufferReceive[64];
 extern char* bufferTransmit[64];
 
-void MY_CAN_Init(void);
-void MY_CAN_Transmit(char* data, uint8_t len);
+typedef struct {
+    float position_deg;   // position, degrees
+    float velocity_rad;   // velocity, rad/s
+    float torque_A;       // torque, A(current)
+} MotorFeedback;
 
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin);
-
-
+void Motor_Init(uint8_t motor_id);
+void Motor_SendTorque(uint16_t can_id, float torque, float torque_max);
 
 #endif /* CAN_H */
