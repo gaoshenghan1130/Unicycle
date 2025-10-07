@@ -32,6 +32,7 @@ typedef struct{
   uint16_t  CustomUcsHdle;                    /**< UcServer handle */
   uint16_t  CustomMmHdle;                  /**< Main_Motor handle */
   uint16_t  CustomBmHdle;                  /**< Balancer_Motor handle */
+  uint16_t  CustomUccHdle;                  /**< UcCommand handle */
 /* USER CODE BEGIN Context */
   /* Place holder for Characteristic Descriptors Handle*/
 
@@ -68,6 +69,7 @@ extern uint16_t Connection_Handle;
 /* Private variables ---------------------------------------------------------*/
 uint16_t SizeMm = 128;
 uint16_t SizeBm = 128;
+uint16_t SizeUcc = 128;
 
 /**
  * START of Section BLE_DRIVER_CONTEXT
@@ -109,6 +111,7 @@ do {\
 #define COPY_UCSERVER_UUID(uuid_struct)          COPY_UUID_128(uuid_struct,0x00,0x00,0x00,0x00,0xcc,0x7a,0x48,0x2a,0x98,0x4a,0x7f,0x2e,0xd5,0xb3,0xe5,0x8f)
 #define COPY_MAIN_MOTOR_UUID(uuid_struct)    COPY_UUID_128(uuid_struct,0x00,0x00,0x00,0x01,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
 #define COPY_BALANCER_MOTOR_UUID(uuid_struct)    COPY_UUID_128(uuid_struct,0x00,0x00,0x00,0x02,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
+#define COPY_UCCOMMAND_UUID(uuid_struct)    COPY_UUID_128(uuid_struct,0x00,0x00,0x00,0x00,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
 
 /* USER CODE BEGIN PF */
 
@@ -161,6 +164,13 @@ static SVCCTL_EvtAckStatus_t Custom_STM_Event_Handler(void *Event)
 
             /* USER CODE END CUSTOM_STM_Service_1_Char_2_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
           } /* if (attribute_modified->Attr_Handle == (CustomContext.CustomBmHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
+          else if (attribute_modified->Attr_Handle == (CustomContext.CustomUccHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
+          {
+            return_value = SVCCTL_EvtAckFlowEnable;
+            /* USER CODE BEGIN CUSTOM_STM_Service_1_Char_3_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
+
+            /* USER CODE END CUSTOM_STM_Service_1_Char_3_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
+          } /* if (attribute_modified->Attr_Handle == (CustomContext.CustomUccHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
           /* USER CODE BEGIN EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_END */
 
           /* USER CODE END EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_END */
@@ -220,6 +230,15 @@ static SVCCTL_EvtAckStatus_t Custom_STM_Event_Handler(void *Event)
 
             /*USER CODE END CUSTOM_STM_Service_1_Char_2_ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE*/
           } /*if (write_perm_req->Attribute_Handle == (CustomContext.CustomBmHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
+
+          else if (write_perm_req->Attribute_Handle == (CustomContext.CustomUccHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
+          {
+            return_value = SVCCTL_EvtAckFlowEnable;
+            /* Allow or reject a write request from a client using aci_gatt_write_resp(...) function */
+            /*USER CODE BEGIN CUSTOM_STM_Service_1_Char_3_ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE */
+
+            /*USER CODE END CUSTOM_STM_Service_1_Char_3_ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE*/
+          } /*if (write_perm_req->Attribute_Handle == (CustomContext.CustomUccHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
 
           /* USER CODE BEGIN EVT_BLUE_GATT_WRITE_PERMIT_REQ_END */
 
@@ -299,16 +318,17 @@ void SVCCTL_InitCustomSvc(void)
   /**
    *          UcServer
    *
-   * Max_Attribute_Records = 1 + 2*2 + 1*no_of_char_with_notify_or_indicate_property + 1*no_of_char_with_broadcast_property
+   * Max_Attribute_Records = 1 + 2*3 + 1*no_of_char_with_notify_or_indicate_property + 1*no_of_char_with_broadcast_property
    * service_max_attribute_record = 1 for UcServer +
    *                                2 for Main_Motor +
    *                                2 for Balancer_Motor +
-   *                              = 5
+   *                                2 for UcCommand +
+   *                              = 7
    *
    * This value doesn't take into account number of descriptors manually added
    * In case of descriptors added, please update the max_attr_record value accordingly in the next SVCCTL_InitService User Section
    */
-  max_attr_record = 5;
+  max_attr_record = 7;
 
   /* USER CODE BEGIN SVCCTL_InitService1 */
   /* max_attr_record to be updated if descriptors have been added */
@@ -382,6 +402,32 @@ void SVCCTL_InitCustomSvc(void)
   /* Place holder for Characteristic Descriptors */
 
   /* USER CODE END SVCCTL_Init_Service1_Char2 */
+  /**
+   *  UcCommand
+   */
+  COPY_UCCOMMAND_UUID(uuid.Char_UUID_128);
+  ret = aci_gatt_add_char(CustomContext.CustomUcsHdle,
+                          UUID_TYPE_128, &uuid,
+                          SizeUcc,
+                          CHAR_PROP_WRITE_WITHOUT_RESP | CHAR_PROP_WRITE,
+                          ATTR_PERMISSION_AUTHOR_READ | ATTR_PERMISSION_AUTHEN_WRITE | ATTR_PERMISSION_AUTHOR_WRITE,
+                          GATT_NOTIFY_ATTRIBUTE_WRITE | GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP | GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,
+                          0x10,
+                          CHAR_VALUE_LEN_VARIABLE,
+                          &(CustomContext.CustomUccHdle));
+  if (ret != BLE_STATUS_SUCCESS)
+  {
+    APP_DBG_MSG("  Fail   : aci_gatt_add_char command   : UCC, error code: 0x%x \n\r", ret);
+  }
+  else
+  {
+    APP_DBG_MSG("  Success: aci_gatt_add_char command   : UCC \n\r");
+  }
+
+  /* USER CODE BEGIN SVCCTL_Init_Service1_Char3 */
+  /* Place holder for Characteristic Descriptors */
+
+  /* USER CODE END SVCCTL_Init_Service1_Char3 */
 
   /* USER CODE BEGIN SVCCTL_InitCustomSvc_2 */
 
@@ -442,6 +488,25 @@ tBleStatus Custom_STM_App_Update_Char(Custom_STM_Char_Opcode_t CharOpcode, uint8
       /* USER CODE BEGIN CUSTOM_STM_App_Update_Service_1_Char_2*/
 
       /* USER CODE END CUSTOM_STM_App_Update_Service_1_Char_2*/
+      break;
+
+    case CUSTOM_STM_UCC:
+      ret = aci_gatt_update_char_value(CustomContext.CustomUcsHdle,
+                                       CustomContext.CustomUccHdle,
+                                       0, /* charValOffset */
+                                       SizeUcc, /* charValueLen */
+                                       (uint8_t *)  pPayload);
+      if (ret != BLE_STATUS_SUCCESS)
+      {
+        APP_DBG_MSG("  Fail   : aci_gatt_update_char_value UCC command, result : 0x%x \n\r", ret);
+      }
+      else
+      {
+        APP_DBG_MSG("  Success: aci_gatt_update_char_value UCC command\n\r");
+      }
+      /* USER CODE BEGIN CUSTOM_STM_App_Update_Service_1_Char_3*/
+
+      /* USER CODE END CUSTOM_STM_App_Update_Service_1_Char_3*/
       break;
 
     default:
@@ -510,6 +575,25 @@ tBleStatus Custom_STM_App_Update_Char_Variable_Length(Custom_STM_Char_Opcode_t C
       /* USER CODE END Custom_STM_App_Update_Char_Variable_Length_Service_1_Char_2*/
       break;
 
+    case CUSTOM_STM_UCC:
+      ret = aci_gatt_update_char_value(CustomContext.CustomUcsHdle,
+                                       CustomContext.CustomUccHdle,
+                                       0, /* charValOffset */
+                                       size, /* charValueLen */
+                                       (uint8_t *)  pPayload);
+      if (ret != BLE_STATUS_SUCCESS)
+      {
+        APP_DBG_MSG("  Fail   : aci_gatt_update_char_value UCC command, result : 0x%x \n\r", ret);
+      }
+      else
+      {
+        APP_DBG_MSG("  Success: aci_gatt_update_char_value UCC command\n\r");
+      }
+      /* USER CODE BEGIN Custom_STM_App_Update_Char_Variable_Length_Service_1_Char_3*/
+
+      /* USER CODE END Custom_STM_App_Update_Char_Variable_Length_Service_1_Char_3*/
+      break;
+
     default:
       break;
   }
@@ -559,6 +643,22 @@ tBleStatus Custom_STM_App_Update_Char_Ext(uint16_t Connection_Handle, Custom_STM
 
       /* USER CODE END Updated_Length_Service_1_Char_2*/
       ret = Generic_STM_App_Update_Char_Ext(Connection_Handle, CustomContext.CustomUcsHdle, CustomContext.CustomBmHdle, SizeBm, pPayload);
+
+      if (ret != BLE_STATUS_SUCCESS)
+      {
+        APP_DBG_MSG("  Fail   : Generic_STM_App_Update_Char_Ext command, result : 0x%x \n\r", ret);
+      }
+      else
+      {
+        APP_DBG_MSG("  Success: Generic_STM_App_Update_Char_Ext command\n\r");
+      }
+      break;
+
+    case CUSTOM_STM_UCC:
+      /* USER CODE BEGIN Updated_Length_Service_1_Char_3*/
+
+      /* USER CODE END Updated_Length_Service_1_Char_3*/
+      ret = Generic_STM_App_Update_Char_Ext(Connection_Handle, CustomContext.CustomUcsHdle, CustomContext.CustomUccHdle, SizeUcc, pPayload);
 
       if (ret != BLE_STATUS_SUCCESS)
       {

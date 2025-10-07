@@ -38,6 +38,7 @@ typedef enum
   /* UcServer */
   CUSTOM_STM_MM,
   CUSTOM_STM_BM,
+  CUSTOM_STM_UCC,
 } Custom_STM_Char_Opcode_t;
 
 typedef enum
@@ -50,6 +51,9 @@ typedef enum
   CUSTOM_STM_BM_READ_EVT,
   CUSTOM_STM_BM_WRITE_NO_RESP_EVT,
   CUSTOM_STM_BM_WRITE_EVT,
+  /* UcCommand */
+  CUSTOM_STM_UCC_WRITE_NO_RESP_EVT,
+  CUSTOM_STM_UCC_WRITE_EVT,
   CUSTOM_STM_NOTIFICATION_COMPLETE_EVT,
 
   CUSTOM_STM_BOOT_REQUEST_EVT
@@ -77,6 +81,7 @@ typedef struct
 /* Exported constants --------------------------------------------------------*/
 extern uint16_t SizeMm;
 extern uint16_t SizeBm;
+extern uint16_t SizeUcc;
 
 /* USER CODE BEGIN EC */
 
