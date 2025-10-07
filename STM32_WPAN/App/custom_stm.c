@@ -66,8 +66,8 @@ extern uint16_t Connection_Handle;
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-uint16_t SizeMm = 1;
-uint16_t SizeBm = 1;
+uint16_t SizeMm = 128;
+uint16_t SizeBm = 128;
 
 /**
  * START of Section BLE_DRIVER_CONTEXT
@@ -341,7 +341,7 @@ void SVCCTL_InitCustomSvc(void)
                           ATTR_PERMISSION_NONE,
                           GATT_NOTIFY_ATTRIBUTE_WRITE | GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP | GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,
                           0x10,
-                          CHAR_VALUE_LEN_CONSTANT,
+                          CHAR_VALUE_LEN_VARIABLE,
                           &(CustomContext.CustomMmHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {
@@ -367,7 +367,7 @@ void SVCCTL_InitCustomSvc(void)
                           ATTR_PERMISSION_NONE,
                           GATT_NOTIFY_ATTRIBUTE_WRITE | GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP | GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,
                           0x10,
-                          CHAR_VALUE_LEN_CONSTANT,
+                          CHAR_VALUE_LEN_VARIABLE,
                           &(CustomContext.CustomBmHdle));
   if (ret != BLE_STATUS_SUCCESS)
   {

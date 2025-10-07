@@ -154,13 +154,6 @@ int main(void)
     /* USER CODE END WHILE */
     MX_APPE_Process();
 
-    const char* str = "Hello from STM32WB55! Count = ";
-    char msg[64];
-    sprintf(msg, "%s%d\r\n", str, count++);
-    printf("%s", msg);
-    Custom_STM_App_Update_Char_Variable_Length(CUSTOM_STM_MM, (uint8_t*)msg, sizeof(char)*(strlen(msg)+1));
-    
-
     /* USER CODE BEGIN 3 */
 
     //Motor_SendTorque(1, 5.0f, 20.0f); // send torque command to motor with CAN ID 1, torque=5A, max torque=20A
