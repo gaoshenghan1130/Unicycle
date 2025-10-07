@@ -40,6 +40,7 @@
 #include "app_common.h"
 #include "hw_if.h"
 #include "hw_conf.h"
+#include "BLE/ble.h"
 // CAN
 #include "CAN/can.h"
 #include "CAN/mcp2515.h"
@@ -147,7 +148,6 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   HAL_Delay(1000); // wait for BLE init
-  uint8_t count = 0;
   while (1)
   {
     /* USER CODE END WHILE */
@@ -163,18 +163,13 @@ int main(void)
     int data_len = 8;
     if (data_len > SizeMm)
       data_len = SizeMm; // 安全截断
-    Custom_STM_App_Update_Char_Variable_Length(CUSTOM_STM_MM, data, data_len);
-    printf("Sent data to CUSTOM_STM_MM: ");
-    for (int i = 0; i < data_len; i++)
-      printf("%02X ", data[i]);
+    updateMotorData((char *)data, data_len);
+    volatile char* rawData; 
+    rawData = getCommand()->rawData;
+    printf("Current Command: ");
+    for (int i = 0; i < getCommand()->size; i++)
+      printf("%02X ", (uint8_t)rawData[i]);
     printf("\r\n");
-
-    // Motor_SendTorque(1, 5.0f, 20.0f); // send torque command to motor with CAN ID 1, torque=5A, max torque=20A
-
-    // printf("Motor Feedback: pos=%.2f deg, vel=%.2f rad/s, torque=%.2f A\r\n",
-    //        motor_feedback.position_deg,
-    //        motor_feedback.velocity_rad,
-    //        motor_feedback.torque_A);
     //////////////////////////////////////////////////////////////////////////////////////////////////
     //// Main loop ///////////////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////
