@@ -36,6 +36,8 @@
 // BLE
 #include "app_ble.h"
 #include "svc_ctl.h"
+#include "custom_stm.h"
+#include "app_common.h"
 #include "hw_if.h"
 #include "hw_conf.h"
 // CAN
@@ -135,7 +137,7 @@ int main(void)
   HAL_Delay(100);// wait for SWV, sometimes it doesn't immediately work
 
   MX_USART1_UART_Init();
-  Motor_Init(0); // initialize motor with CAN ID 1
+  //Motor_Init(0); // initialize motor with CAN ID 1
 
 
   /* USER CODE END 2 */
@@ -145,11 +147,19 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+
+  uint8_t count = 0;
   while (1)
   {
     /* USER CODE END WHILE */
     MX_APPE_Process();
-    Motor_SendTorque(MOTOR_DEFAULT_ID, 1.0f, 20.0f); // 0A torque
+
+    const char* str = "Hello from STM32WB55! Count = ";
+    char msg[64];
+    sprintf(msg, "%s%d\r\n", str, count++);
+    printf("%s", msg);
+    Custom_STM_App_Update_Char_Variable_Length(CUSTOM_STM_MM, (uint8_t*)msg, sizeof(char)*(strlen(msg)+1));
+    
 
     /* USER CODE BEGIN 3 */
 
