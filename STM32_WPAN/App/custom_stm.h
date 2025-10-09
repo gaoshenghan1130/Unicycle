@@ -29,6 +29,7 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "app_includes.h"
+#include "main.h"
 
 /* USER CODE END Includes */
 
@@ -39,6 +40,7 @@ typedef enum
   CUSTOM_STM_MM,
   CUSTOM_STM_BM,
   CUSTOM_STM_UCC,
+  CUSTOM_STM_UCU,
 } Custom_STM_Char_Opcode_t;
 
 typedef enum
@@ -54,6 +56,9 @@ typedef enum
   /* UcCommand */
   CUSTOM_STM_UCC_WRITE_NO_RESP_EVT,
   CUSTOM_STM_UCC_WRITE_EVT,
+  /* UcUpdater */
+  CUSTOM_STM_UCU_WRITE_NO_RESP_EVT,
+  CUSTOM_STM_UCU_WRITE_EVT,
   CUSTOM_STM_NOTIFICATION_COMPLETE_EVT,
 
   CUSTOM_STM_BOOT_REQUEST_EVT
@@ -82,6 +87,7 @@ typedef struct
 extern uint16_t SizeMm;
 extern uint16_t SizeBm;
 extern uint16_t SizeUcc;
+extern uint16_t SizeUcu;
 
 /* USER CODE BEGIN EC */
 

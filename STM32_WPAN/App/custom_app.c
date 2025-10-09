@@ -42,7 +42,7 @@ typedef struct
 
   /* USER CODE END CUSTOM_APP_Context_t */
 
-  uint16_t ConnectionHandle;
+  uint16_t              ConnectionHandle;
 } Custom_App_Context_t;
 
 /* USER CODE BEGIN PTD */
@@ -87,81 +87,93 @@ uint16_t Connection_Handle;
 /* Functions Definition ------------------------------------------------------*/
 void Custom_STM_App_Notification(Custom_STM_App_Notification_evt_t *pNotification)
 {
-  printf("Custom_STM_App_Notification: Opcode=%d, Length=%d\r\n", pNotification->Custom_Evt_Opcode, pNotification->DataTransfered.Length);
   /* USER CODE BEGIN CUSTOM_STM_App_Notification_1 */
+  printf("Custom_STM_App_Notification: opcode=%d, length=%d\r\n", pNotification->Custom_Evt_Opcode, pNotification->DataTransfered.Length);
 
   /* USER CODE END CUSTOM_STM_App_Notification_1 */
   switch (pNotification->Custom_Evt_Opcode)
   {
-  /* USER CODE BEGIN CUSTOM_STM_App_Notification_Custom_Evt_Opcode */
+    /* USER CODE BEGIN CUSTOM_STM_App_Notification_Custom_Evt_Opcode */
 
-  /* USER CODE END CUSTOM_STM_App_Notification_Custom_Evt_Opcode */
+    /* USER CODE END CUSTOM_STM_App_Notification_Custom_Evt_Opcode */
 
-  /* UcServer */
-  case CUSTOM_STM_MM_READ_EVT:
-    /* USER CODE BEGIN CUSTOM_STM_MM_READ_EVT */
+    /* UcServer */
+    case CUSTOM_STM_MM_READ_EVT:
+      /* USER CODE BEGIN CUSTOM_STM_MM_READ_EVT */
 
-    /* USER CODE END CUSTOM_STM_MM_READ_EVT */
-    break;
+      /* USER CODE END CUSTOM_STM_MM_READ_EVT */
+      break;
 
-  case CUSTOM_STM_MM_WRITE_NO_RESP_EVT:
-    /* USER CODE BEGIN CUSTOM_STM_MM_WRITE_NO_RESP_EVT */
+    case CUSTOM_STM_MM_WRITE_NO_RESP_EVT:
+      /* USER CODE BEGIN CUSTOM_STM_MM_WRITE_NO_RESP_EVT */
 
-    /* USER CODE END CUSTOM_STM_MM_WRITE_NO_RESP_EVT */
-    break;
+      /* USER CODE END CUSTOM_STM_MM_WRITE_NO_RESP_EVT */
+      break;
 
-  case CUSTOM_STM_MM_WRITE_EVT:
-    /* USER CODE BEGIN CUSTOM_STM_MM_WRITE_EVT */
+    case CUSTOM_STM_MM_WRITE_EVT:
+      /* USER CODE BEGIN CUSTOM_STM_MM_WRITE_EVT */
 
-    /* USER CODE END CUSTOM_STM_MM_WRITE_EVT */
-    break;
+      /* USER CODE END CUSTOM_STM_MM_WRITE_EVT */
+      break;
 
-  case CUSTOM_STM_BM_READ_EVT:
-    /* USER CODE BEGIN CUSTOM_STM_BM_READ_EVT */
+    case CUSTOM_STM_BM_READ_EVT:
+      /* USER CODE BEGIN CUSTOM_STM_BM_READ_EVT */
 
-    /* USER CODE END CUSTOM_STM_BM_READ_EVT */
-    break;
+      /* USER CODE END CUSTOM_STM_BM_READ_EVT */
+      break;
 
-  case CUSTOM_STM_BM_WRITE_NO_RESP_EVT:
-    /* USER CODE BEGIN CUSTOM_STM_BM_WRITE_NO_RESP_EVT */
+    case CUSTOM_STM_BM_WRITE_NO_RESP_EVT:
+      /* USER CODE BEGIN CUSTOM_STM_BM_WRITE_NO_RESP_EVT */
 
-    /* USER CODE END CUSTOM_STM_BM_WRITE_NO_RESP_EVT */
-    break;
+      /* USER CODE END CUSTOM_STM_BM_WRITE_NO_RESP_EVT */
+      break;
 
-  case CUSTOM_STM_BM_WRITE_EVT:
-    /* USER CODE BEGIN CUSTOM_STM_BM_WRITE_EVT */
+    case CUSTOM_STM_BM_WRITE_EVT:
+      /* USER CODE BEGIN CUSTOM_STM_BM_WRITE_EVT */
 
-    /* USER CODE END CUSTOM_STM_BM_WRITE_EVT */
-    break;
+      /* USER CODE END CUSTOM_STM_BM_WRITE_EVT */
+      break;
 
-  case CUSTOM_STM_UCC_WRITE_NO_RESP_EVT:
-    /* USER CODE BEGIN CUSTOM_STM_UCC_WRITE_NO_RESP_EVT */
+    case CUSTOM_STM_UCC_WRITE_NO_RESP_EVT:
+      /* USER CODE BEGIN CUSTOM_STM_UCC_WRITE_NO_RESP_EVT */
     uint8_t *data_n = pNotification->DataTransfered.pPayload; 
     uint8_t size_n = pNotification->DataTransfered.Length;
     loadCommand((char *)data_n, size_n);
 
-    /* USER CODE END CUSTOM_STM_UCC_WRITE_NO_RESP_EVT */
-    break;
+      /* USER CODE END CUSTOM_STM_UCC_WRITE_NO_RESP_EVT */
+      break;
 
-  case CUSTOM_STM_UCC_WRITE_EVT:
-    /* USER CODE BEGIN CUSTOM_STM_UCC_WRITE_EVT */
+    case CUSTOM_STM_UCC_WRITE_EVT:
+      /* USER CODE BEGIN CUSTOM_STM_UCC_WRITE_EVT */
     uint8_t *data = pNotification->DataTransfered.pPayload; 
     uint8_t size = pNotification->DataTransfered.Length;
     loadCommand((char *)data, size);
-    /* USER CODE END CUSTOM_STM_UCC_WRITE_EVT */
-    break;
+      /* USER CODE END CUSTOM_STM_UCC_WRITE_EVT */
+      break;
 
-  case CUSTOM_STM_NOTIFICATION_COMPLETE_EVT:
-    /* USER CODE BEGIN CUSTOM_STM_NOTIFICATION_COMPLETE_EVT */
+    case CUSTOM_STM_UCU_WRITE_NO_RESP_EVT:
+      /* USER CODE BEGIN CUSTOM_STM_UCU_WRITE_NO_RESP_EVT */
 
-    /* USER CODE END CUSTOM_STM_NOTIFICATION_COMPLETE_EVT */
-    break;
+      /* USER CODE END CUSTOM_STM_UCU_WRITE_NO_RESP_EVT */
+      break;
 
-  default:
-    /* USER CODE BEGIN CUSTOM_STM_App_Notification_default */
+    case CUSTOM_STM_UCU_WRITE_EVT:
+      /* USER CODE BEGIN CUSTOM_STM_UCU_WRITE_EVT */
 
-    /* USER CODE END CUSTOM_STM_App_Notification_default */
-    break;
+      /* USER CODE END CUSTOM_STM_UCU_WRITE_EVT */
+      break;
+
+    case CUSTOM_STM_NOTIFICATION_COMPLETE_EVT:
+      /* USER CODE BEGIN CUSTOM_STM_NOTIFICATION_COMPLETE_EVT */
+
+      /* USER CODE END CUSTOM_STM_NOTIFICATION_COMPLETE_EVT */
+      break;
+
+    default:
+      /* USER CODE BEGIN CUSTOM_STM_App_Notification_default */
+
+      /* USER CODE END CUSTOM_STM_App_Notification_default */
+      break;
   }
   /* USER CODE BEGIN CUSTOM_STM_App_Notification_2 */
 
@@ -177,26 +189,26 @@ void Custom_APP_Notification(Custom_App_ConnHandle_Not_evt_t *pNotification)
 
   switch (pNotification->Custom_Evt_Opcode)
   {
-  /* USER CODE BEGIN CUSTOM_APP_Notification_Custom_Evt_Opcode */
+    /* USER CODE BEGIN CUSTOM_APP_Notification_Custom_Evt_Opcode */
 
-  /* USER CODE END P2PS_CUSTOM_Notification_Custom_Evt_Opcode */
-  case CUSTOM_CONN_HANDLE_EVT:
-    /* USER CODE BEGIN CUSTOM_CONN_HANDLE_EVT */
+    /* USER CODE END P2PS_CUSTOM_Notification_Custom_Evt_Opcode */
+    case CUSTOM_CONN_HANDLE_EVT :
+      /* USER CODE BEGIN CUSTOM_CONN_HANDLE_EVT */
 
-    /* USER CODE END CUSTOM_CONN_HANDLE_EVT */
-    break;
+      /* USER CODE END CUSTOM_CONN_HANDLE_EVT */
+      break;
 
-  case CUSTOM_DISCON_HANDLE_EVT:
-    /* USER CODE BEGIN CUSTOM_DISCON_HANDLE_EVT */
+    case CUSTOM_DISCON_HANDLE_EVT :
+      /* USER CODE BEGIN CUSTOM_DISCON_HANDLE_EVT */
 
-    /* USER CODE END CUSTOM_DISCON_HANDLE_EVT */
-    break;
+      /* USER CODE END CUSTOM_DISCON_HANDLE_EVT */
+      break;
 
-  default:
-    /* USER CODE BEGIN CUSTOM_APP_Notification_default */
+    default:
+      /* USER CODE BEGIN CUSTOM_APP_Notification_default */
 
-    /* USER CODE END CUSTOM_APP_Notification_default */
-    break;
+      /* USER CODE END CUSTOM_APP_Notification_default */
+      break;
   }
 
   /* USER CODE BEGIN CUSTOM_APP_Notification_2 */

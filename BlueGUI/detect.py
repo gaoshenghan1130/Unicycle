@@ -36,6 +36,8 @@ async def connect_ble():
         for char in service.characteristics:
             props = ", ".join(char.properties)
             print(f"  └── [Char] {char.uuid} ({props})")
+            #handle = char.handle
+            print(f"    └── Handle: {char.handle}")
 
     return True
 
