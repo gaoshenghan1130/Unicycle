@@ -113,8 +113,8 @@ do {\
 #define COPY_UCSERVER_UUID(uuid_struct)          COPY_UUID_128(uuid_struct,0x00,0x00,0x00,0x00,0xcc,0x7a,0x48,0x2a,0x98,0x4a,0x7f,0x2e,0xd5,0xb3,0xe5,0x8f)
 #define COPY_MAIN_MOTOR_UUID(uuid_struct)    COPY_UUID_128(uuid_struct,0x00,0x00,0x00,0x01,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
 #define COPY_BALANCER_MOTOR_UUID(uuid_struct)    COPY_UUID_128(uuid_struct,0x00,0x00,0x00,0x02,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
-#define COPY_UCCOMMAND_UUID(uuid_struct)    COPY_UUID_128(uuid_struct,0x00,0x00,0x00,0x00,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
-#define COPY_UCUPDATER_UUID(uuid_struct)    COPY_UUID_128(uuid_struct,0x00,0x00,0x00,0x00,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
+#define COPY_UCCOMMAND_UUID(uuid_struct)    COPY_UUID_128(uuid_struct,0x00,0x00,0x00,0x03,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
+#define COPY_UCUPDATER_UUID(uuid_struct)    COPY_UUID_128(uuid_struct,0x00,0x00,0x00,0x04,0x8e,0x22,0x45,0x41,0x9d,0x4c,0x21,0xed,0xae,0x82,0xed,0x19)
 
 /* USER CODE BEGIN PF */
 
@@ -150,7 +150,7 @@ static SVCCTL_EvtAckStatus_t Custom_STM_Event_Handler(void *Event)
       {
         case ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE:
           /* USER CODE BEGIN EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_BEGIN */
-      printf("ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE\r\n");
+              printf("ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE\r\n");
           /* USER CODE END EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_BEGIN */
           attribute_modified = (aci_gatt_attribute_modified_event_rp0*)blecore_evt->data;
           if (attribute_modified->Attr_Handle == (CustomContext.CustomMmHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
@@ -164,6 +164,8 @@ static SVCCTL_EvtAckStatus_t Custom_STM_Event_Handler(void *Event)
           {
             return_value = SVCCTL_EvtAckFlowEnable;
             /* USER CODE BEGIN CUSTOM_STM_Service_1_Char_2_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
+            printf("ATTRIBUTE_MODIFIED for BM handle=0x%04X, len=%d, conn=0x%04X\r\n",
+                   attribute_modified->Attr_Handle, attribute_modified->Attr_Data_Length, attribute_modified->Connection_Handle);
 
             /* USER CODE END CUSTOM_STM_Service_1_Char_2_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
           } /* if (attribute_modified->Attr_Handle == (CustomContext.CustomBmHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
@@ -171,6 +173,8 @@ static SVCCTL_EvtAckStatus_t Custom_STM_Event_Handler(void *Event)
           {
             return_value = SVCCTL_EvtAckFlowEnable;
             /* USER CODE BEGIN CUSTOM_STM_Service_1_Char_3_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
+            printf("ATTRIBUTE_MODIFIED for UCC handle=0x%04X, len=%d, conn=0x%04X\r\n",
+                   attribute_modified->Attr_Handle, attribute_modified->Attr_Data_Length, attribute_modified->Connection_Handle);
 
             /* USER CODE END CUSTOM_STM_Service_1_Char_3_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
           } /* if (attribute_modified->Attr_Handle == (CustomContext.CustomUccHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
@@ -178,44 +182,13 @@ static SVCCTL_EvtAckStatus_t Custom_STM_Event_Handler(void *Event)
           {
             return_value = SVCCTL_EvtAckFlowEnable;
             /* USER CODE BEGIN CUSTOM_STM_Service_1_Char_4_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
+            printf("ATTRIBUTE_MODIFIED for UCU handle=0x%04X, len=%d, conn=0x%04X\r\n",
+                   attribute_modified->Attr_Handle, attribute_modified->Attr_Data_Length, attribute_modified->Connection_Handle);
 
             /* USER CODE END CUSTOM_STM_Service_1_Char_4_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
           } /* if (attribute_modified->Attr_Handle == (CustomContext.CustomUcuHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
           /* USER CODE BEGIN EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_END */
-      printf("attribute_modified->Attr_Handle = 0x%04X, len=%d\r\n",
-             attribute_modified->Attr_Handle, attribute_modified->Attr_Data_Length);
-
-      /* 计算我们期望的 value handles（Declaration + offset）*/
-      uint16_t mm_value_handle = CustomContext.CustomMmHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET;
-      uint16_t bm_value_handle = CustomContext.CustomBmHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET;
-      uint16_t ucc_value_handle = CustomContext.CustomUccHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET;
-
-      printf("Expected handles -> MM:0x%04X BM:0x%04X UCC:0x%04X\r\n",
-             mm_value_handle, bm_value_handle, ucc_value_handle);
-      if (attribute_modified->Attr_Handle == ucc_value_handle)
-      {
-        printf("UCCOMMAND 被寫入！长度=%d\r\n", attribute_modified->Attr_Data_Length);
-        return_value = SVCCTL_EvtAckFlowEnable;
-
-        // 打印数据
-        printf("data: ");
-        for (int i = 0; i < attribute_modified->Attr_Data_Length; i++)
-        {
-          printf("%02X ", attribute_modified->Attr_Data[i]);
-        }
-        printf("\r\n");
-
-        Custom_STM_App_Notification_evt_t Notification;
-        Notification.Custom_Evt_Opcode = CUSTOM_STM_UCC_WRITE_EVT; // 确认定义名一致
-        Notification.DataTransfered.pPayload = attribute_modified->Attr_Data;
-        Notification.DataTransfered.Length = attribute_modified->Attr_Data_Length;
-        Custom_STM_App_Notification(&Notification);
-      }
-      else
-      {
-        /* 不是我们关心的 attribute（例如 handle = 4） */
-        printf("Attribute modified but not a custom characteristic (handle=0x%04X)\r\n", attribute_modified->Attr_Handle);
-      }
+  
           /* USER CODE END EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_END */
           break;
 
@@ -464,7 +437,7 @@ void SVCCTL_InitCustomSvc(void)
                           UUID_TYPE_128, &uuid,
                           SizeUcc,
                           CHAR_PROP_WRITE_WITHOUT_RESP | CHAR_PROP_WRITE,
-                          ATTR_PERMISSION_AUTHOR_READ | ATTR_PERMISSION_AUTHEN_WRITE | ATTR_PERMISSION_AUTHOR_WRITE,
+                          ATTR_PERMISSION_NONE,
                           GATT_NOTIFY_ATTRIBUTE_WRITE | GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP | GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP | GATT_NOTIFY_NOTIFICATION_COMPLETION,
                           0x10,
                           CHAR_VALUE_LEN_VARIABLE,

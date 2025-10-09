@@ -10,7 +10,7 @@ async def main():
             #data = await client.read_gatt_char("00000001-8e22-4541-9d4c-21edae82ed19")
             #print("Data:", data)
             write_data = bytearray([0x01, 0x02, 0x03, 0x04])
-            await client.write_gatt_char("00000002-8e22-4541-9d4c-21edae82ed19", write_data, response=False
+            await client.write_gatt_char("00000003-8e22-4541-9d4c-21edae82ed19", write_data, response=False
             )
             print("Wrote:", write_data)
         else:

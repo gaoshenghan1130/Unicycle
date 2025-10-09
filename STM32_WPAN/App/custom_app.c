@@ -136,24 +136,25 @@ void Custom_STM_App_Notification(Custom_STM_App_Notification_evt_t *pNotificatio
 
     case CUSTOM_STM_UCC_WRITE_NO_RESP_EVT:
       /* USER CODE BEGIN CUSTOM_STM_UCC_WRITE_NO_RESP_EVT */
-    uint8_t *data_n = pNotification->DataTransfered.pPayload; 
-    uint8_t size_n = pNotification->DataTransfered.Length;
-    loadCommand((char *)data_n, size_n);
+              uint8_t *data_n = pNotification->DataTransfered.pPayload; 
+        uint8_t size_n = pNotification->DataTransfered.Length;
+        loadCommand((char *)data_n, size_n);
 
       /* USER CODE END CUSTOM_STM_UCC_WRITE_NO_RESP_EVT */
       break;
 
     case CUSTOM_STM_UCC_WRITE_EVT:
       /* USER CODE BEGIN CUSTOM_STM_UCC_WRITE_EVT */
-    uint8_t *data = pNotification->DataTransfered.pPayload; 
-    uint8_t size = pNotification->DataTransfered.Length;
-    loadCommand((char *)data, size);
+              uint8_t *data = pNotification->DataTransfered.pPayload; 
+        uint8_t size = pNotification->DataTransfered.Length;
+        loadCommand((char *)data, size);
+
       /* USER CODE END CUSTOM_STM_UCC_WRITE_EVT */
       break;
 
     case CUSTOM_STM_UCU_WRITE_NO_RESP_EVT:
       /* USER CODE BEGIN CUSTOM_STM_UCU_WRITE_NO_RESP_EVT */
-
+      
       /* USER CODE END CUSTOM_STM_UCU_WRITE_NO_RESP_EVT */
       break;
 
