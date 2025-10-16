@@ -5,7 +5,8 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "Drivers/STM32WBxx_HAL_Driver/Inc",
-                "Drivers/CMSIS/Include", "Drivers/CMSIS/Device/ST/STM32WBxx/Include", 
+                "Drivers/CMSIS/Include",
+                "Drivers/CMSIS/Device/ST/STM32WBxx/Include",
                 "Core/Inc",
                 "Core/Inc/ble",
                 "Middlewares/ST/STM32_WPAN",
@@ -19,14 +20,14 @@
                 "Middlewares/ST/STM32_WPAN/interface/patterns/ble_thread/tl",
                 "STM32_WPAN/App",
                 "STM32_WPAN/Target"
-
             ],
             "defines": [],
             "compilerPath": "/usr/bin/clang",
             "cStandard": "c17",
             "cppStandard": "c++14",
             "intelliSenseMode": "macos-clang-arm64",
-            "configurationProvider": "ms-vscode.cmake-tools"
+            "configurationProvider": "ms-vscode.cmake-tools",
+            "compileCommands": "${workspaceFolder}/Debug/compile_commands.json"
         }
     ],
     "version": 4

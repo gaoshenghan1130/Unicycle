@@ -24,6 +24,7 @@
 
 /* USER CODE BEGIN Includes */
 #include "app_includes.h"
+#include <stdio.h>
 
 /* USER CODE END Includes */
 
@@ -153,7 +154,66 @@ static SVCCTL_EvtAckStatus_t Custom_STM_Event_Handler(void *Event)
               printf("ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE\r\n");
           /* USER CODE END EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_BEGIN */
           attribute_modified = (aci_gatt_attribute_modified_event_rp0*)blecore_evt->data;
-          if (attribute_modified->Attr_Handle == (CustomContext.CustomMmHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
+          if (attribute_modified->Attr_Handle == (CustomContext.CustomUccHdle + CHARACTERISTIC_DESCRIPTOR_ATTRIBUTE_OFFSET))
+          {
+            return_value = SVCCTL_EvtAckFlowEnable;
+            /* USER CODE BEGIN CUSTOM_STM_Service_1_Char_3 */
+
+            /* USER CODE END CUSTOM_STM_Service_1_Char_3 */
+
+            switch (attribute_modified->Attr_Data[0])
+            {
+              /* USER CODE BEGIN CUSTOM_STM_Service_1_Char_3_attribute_modified  */
+
+              /* USER CODE END CUSTOM_STM_Service_1_Char_3_attribute_modified  */
+
+              /* Disabled Notification and Indication management */
+              case (!(COMSVC_Notification) | !(COMSVC_Indication)):
+                /* USER CODE BEGIN CUSTOM_STM_Service_1_Char_3_Disabled_BEGIN  */
+
+                /* USER CODE END CUSTOM_STM_Service_1_Char_3_Disabled_BEGIN  */
+                Notification.Custom_Evt_Opcode = CUSTOM_STM_UCC_NOTIFY_DISABLED_EVT;
+                Custom_STM_App_Notification(&Notification);
+                Notification.Custom_Evt_Opcode = CUSTOM_STM_UCC_INDICATE_DISABLED_EVT;
+                Custom_STM_App_Notification(&Notification);
+                /* USER CODE BEGIN CUSTOM_STM_Service_1_Char_3_Disabled_END */
+
+                /* USER CODE END CUSTOM_STM_Service_1_Char_3_Disabled_END */
+                break;
+
+              /* Enabled Notification management */
+              case COMSVC_Notification:
+                /* USER CODE BEGIN CUSTOM_STM_Service_1_Char_3_COMSVC_Notification_BEGIN */
+
+                /* USER CODE END CUSTOM_STM_Service_1_Char_3_COMSVC_Notification_BEGIN */
+                Notification.Custom_Evt_Opcode = CUSTOM_STM_UCC_NOTIFY_ENABLED_EVT;
+                Custom_STM_App_Notification(&Notification);
+                /* USER CODE BEGIN CUSTOM_STM_Service_1_Char_3_COMSVC_Notification_END */
+
+                /* USER CODE END CUSTOM_STM_Service_1_Char_3_COMSVC_Notification_END */
+                break;
+
+              /* Enabled Indication management */
+              case COMSVC_Indication:
+                /* USER CODE BEGIN CUSTOM_STM_Service_1_Char_3_COMSVC_Indication_BEGIN */
+
+                /* USER CODE END CUSTOM_STM_Service_1_Char_3_COMSVC_Indication_BEGIN */
+                Notification.Custom_Evt_Opcode = CUSTOM_STM_UCC_INDICATE_ENABLED_EVT;
+                Custom_STM_App_Notification(&Notification);
+                /* USER CODE BEGIN CUSTOM_STM_Service_1_Char_3_COMSVC_Indication_END */
+
+                /* USER CODE END CUSTOM_STM_Service_1_Char_3_COMSVC_Indication_END */
+                break;
+
+              default:
+                /* USER CODE BEGIN CUSTOM_STM_Service_1_Char_3_default */
+
+                /* USER CODE END CUSTOM_STM_Service_1_Char_3_default */
+                break;
+            }
+          }  /* if (attribute_modified->Attr_Handle == (CustomContext.CustomUccHdle + CHARACTERISTIC_DESCRIPTOR_ATTRIBUTE_OFFSET))*/
+
+          else if (attribute_modified->Attr_Handle == (CustomContext.CustomMmHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
           {
             return_value = SVCCTL_EvtAckFlowEnable;
             /* USER CODE BEGIN CUSTOM_STM_Service_1_Char_1_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
@@ -175,7 +235,13 @@ static SVCCTL_EvtAckStatus_t Custom_STM_Event_Handler(void *Event)
             /* USER CODE BEGIN CUSTOM_STM_Service_1_Char_3_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
             printf("ATTRIBUTE_MODIFIED for UCC handle=0x%04X, len=%d, conn=0x%04X\r\n",
                    attribute_modified->Attr_Handle, attribute_modified->Attr_Data_Length, attribute_modified->Connection_Handle);
+                  Custom_STM_App_Notification_evt_t Notification;
+                  Notification.Custom_Evt_Opcode = CUSTOM_STM_UCC_WRITE_EVT;  // 自定义事件码
+                  Notification.DataTransfered.pPayload = attribute_modified->Attr_Data;  
+                  Notification.DataTransfered.Length = attribute_modified->Attr_Data_Length;
+                  Notification.ConnectionHandle = attribute_modified->Connection_Handle;
 
+              Custom_STM_App_Notification(&Notification); // Notify application of received data
             /* USER CODE END CUSTOM_STM_Service_1_Char_3_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
           } /* if (attribute_modified->Attr_Handle == (CustomContext.CustomUccHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
           else if (attribute_modified->Attr_Handle == (CustomContext.CustomUcuHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
@@ -184,10 +250,12 @@ static SVCCTL_EvtAckStatus_t Custom_STM_Event_Handler(void *Event)
             /* USER CODE BEGIN CUSTOM_STM_Service_1_Char_4_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
             printf("ATTRIBUTE_MODIFIED for UCU handle=0x%04X, len=%d, conn=0x%04X\r\n",
                    attribute_modified->Attr_Handle, attribute_modified->Attr_Data_Length, attribute_modified->Connection_Handle);
-
+            Custom_STM_App_Notification(&Notification); // Notify application of received data
             /* USER CODE END CUSTOM_STM_Service_1_Char_4_ACI_GATT_ATTRIBUTE_MODIFIED_VSEVT_CODE */
           } /* if (attribute_modified->Attr_Handle == (CustomContext.CustomUcuHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
           /* USER CODE BEGIN EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_END */
+          printf("ATTRIBUTE_MODIFIED for unknown handle=0x%04X, len=%d, conn=0x%04X\r\n",
+                 attribute_modified->Attr_Handle, attribute_modified->Attr_Data_Length, attribute_modified->Connection_Handle);
   
           /* USER CODE END EVT_BLUE_GATT_ATTRIBUTE_MODIFIED_END */
           break;
@@ -246,15 +314,6 @@ static SVCCTL_EvtAckStatus_t Custom_STM_Event_Handler(void *Event)
 
             /*USER CODE END CUSTOM_STM_Service_1_Char_2_ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE*/
           } /*if (write_perm_req->Attribute_Handle == (CustomContext.CustomBmHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
-
-          else if (write_perm_req->Attribute_Handle == (CustomContext.CustomUccHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
-          {
-            return_value = SVCCTL_EvtAckFlowEnable;
-            /* Allow or reject a write request from a client using aci_gatt_write_resp(...) function */
-            /*USER CODE BEGIN CUSTOM_STM_Service_1_Char_3_ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE */
-
-            /*USER CODE END CUSTOM_STM_Service_1_Char_3_ACI_GATT_WRITE_PERMIT_REQ_VSEVT_CODE*/
-          } /*if (write_perm_req->Attribute_Handle == (CustomContext.CustomUccHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))*/
 
           else if (write_perm_req->Attribute_Handle == (CustomContext.CustomUcuHdle + CHARACTERISTIC_VALUE_ATTRIBUTE_OFFSET))
           {
@@ -350,12 +409,14 @@ void SVCCTL_InitCustomSvc(void)
    *                                2 for Balancer_Motor +
    *                                2 for UcCommand +
    *                                2 for UcUpdater +
-   *                              = 9
+   *                                1 for UcCommand configuration descriptor +
+   *                                1 for UcCommand broadcast property +
+   *                              = 11
    *
    * This value doesn't take into account number of descriptors manually added
    * In case of descriptors added, please update the max_attr_record value accordingly in the next SVCCTL_InitService User Section
    */
-  max_attr_record = 9;
+  max_attr_record = 11;
 
   /* USER CODE BEGIN SVCCTL_InitService1 */
   /* max_attr_record to be updated if descriptors have been added */
@@ -436,9 +497,9 @@ void SVCCTL_InitCustomSvc(void)
   ret = aci_gatt_add_char(CustomContext.CustomUcsHdle,
                           UUID_TYPE_128, &uuid,
                           SizeUcc,
-                          CHAR_PROP_WRITE_WITHOUT_RESP | CHAR_PROP_WRITE,
+                          CHAR_PROP_BROADCAST | CHAR_PROP_WRITE_WITHOUT_RESP | CHAR_PROP_WRITE | CHAR_PROP_NOTIFY | CHAR_PROP_INDICATE,
                           ATTR_PERMISSION_NONE,
-                          GATT_NOTIFY_ATTRIBUTE_WRITE | GATT_NOTIFY_WRITE_REQ_AND_WAIT_FOR_APPL_RESP | GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP | GATT_NOTIFY_NOTIFICATION_COMPLETION,
+                          GATT_NOTIFY_ATTRIBUTE_WRITE,
                           0x10,
                           CHAR_VALUE_LEN_VARIABLE,
                           &(CustomContext.CustomUccHdle));

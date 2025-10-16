@@ -38,6 +38,8 @@
 typedef struct
 {
   /* UcServer */
+  uint8_t               Ucc_Notification_Status;
+  uint8_t               Ucc_Indication_Status;
   /* USER CODE BEGIN CUSTOM_APP_Context_t */
 
   /* USER CODE END CUSTOM_APP_Context_t */
@@ -79,6 +81,9 @@ uint16_t Connection_Handle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* UcServer */
+static void Custom_Ucc_Update_Char(void);
+static void Custom_Ucc_Send_Notification(void);
+static void Custom_Ucc_Send_Indication(void);
 
 /* USER CODE BEGIN PFP */
 
@@ -150,6 +155,30 @@ void Custom_STM_App_Notification(Custom_STM_App_Notification_evt_t *pNotificatio
         loadCommand((char *)data, size);
 
       /* USER CODE END CUSTOM_STM_UCC_WRITE_EVT */
+      break;
+
+    case CUSTOM_STM_UCC_NOTIFY_ENABLED_EVT:
+      /* USER CODE BEGIN CUSTOM_STM_UCC_NOTIFY_ENABLED_EVT */
+
+      /* USER CODE END CUSTOM_STM_UCC_NOTIFY_ENABLED_EVT */
+      break;
+
+    case CUSTOM_STM_UCC_NOTIFY_DISABLED_EVT:
+      /* USER CODE BEGIN CUSTOM_STM_UCC_NOTIFY_DISABLED_EVT */
+
+      /* USER CODE END CUSTOM_STM_UCC_NOTIFY_DISABLED_EVT */
+      break;
+
+    case CUSTOM_STM_UCC_INDICATE_ENABLED_EVT:
+      /* USER CODE BEGIN CUSTOM_STM_UCC_INDICATE_ENABLED_EVT */
+
+      /* USER CODE END CUSTOM_STM_UCC_INDICATE_ENABLED_EVT */
+      break;
+
+    case CUSTOM_STM_UCC_INDICATE_DISABLED_EVT:
+      /* USER CODE BEGIN CUSTOM_STM_UCC_INDICATE_DISABLED_EVT */
+
+      /* USER CODE END CUSTOM_STM_UCC_INDICATE_DISABLED_EVT */
       break;
 
     case CUSTOM_STM_UCU_WRITE_NO_RESP_EVT:
@@ -238,6 +267,64 @@ void Custom_APP_Init(void)
  *************************************************************/
 
 /* UcServer */
+__USED void Custom_Ucc_Update_Char(void) /* Property Read */
+{
+  uint8_t updateflag = 0;
+
+  /* USER CODE BEGIN Ucc_UC_1*/
+
+  /* USER CODE END Ucc_UC_1*/
+
+  if (updateflag != 0)
+  {
+    Custom_STM_App_Update_Char(CUSTOM_STM_UCC, (uint8_t *)UpdateCharData);
+  }
+
+  /* USER CODE BEGIN Ucc_UC_Last*/
+
+  /* USER CODE END Ucc_UC_Last*/
+  return;
+}
+
+void Custom_Ucc_Send_Notification(void) /* Property Notification */
+{
+  uint8_t updateflag = 0;
+
+  /* USER CODE BEGIN Ucc_NS_1*/
+
+  /* USER CODE END Ucc_NS_1*/
+
+  if (updateflag != 0)
+  {
+    Custom_STM_App_Update_Char(CUSTOM_STM_UCC, (uint8_t *)NotifyCharData);
+  }
+
+  /* USER CODE BEGIN Ucc_NS_Last*/
+
+  /* USER CODE END Ucc_NS_Last*/
+
+  return;
+}
+
+void Custom_Ucc_Send_Indication(void) /* Property Indication */
+{
+  uint8_t updateflag = 0;
+
+  /* USER CODE BEGIN Ucc_IS_1*/
+
+  /* USER CODE END Ucc_IS_1*/
+
+  if (updateflag != 0)
+  {
+    Custom_STM_App_Update_Char(CUSTOM_STM_UCC, (uint8_t *)NotifyCharData);
+  }
+
+  /* USER CODE BEGIN Ucc_IS_Last*/
+
+  /* USER CODE END Ucc_IS_Last*/
+
+  return;
+}
 
 /* USER CODE BEGIN FD_LOCAL_FUNCTIONS*/
 
