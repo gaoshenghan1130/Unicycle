@@ -55,11 +55,11 @@ async def connect_ble():
     except Exception as e:
         print("Failed to enable notify:", e)
 
-    print("⚠️ Connection lost.")
-    return True
-
-
-    return True
+async def check_connection() -> bool:
+    global Client
+    if Client and Client.is_connected:
+        return True
+    raise ConnectionError("BLE client not connected")
 
 async def write_ble() -> bool:
     print("Writing data to BLE device...")
