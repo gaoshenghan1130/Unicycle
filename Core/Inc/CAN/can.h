@@ -24,6 +24,7 @@ typedef struct {
     bool updated;        // whether this feedback is updated
 } MotorFeedback;
 
+void MY_CAN_Transmit(uint8_t *data, uint8_t len, uint8_t can_id);
 void Motor_Init(uint8_t motor_id);
 void Motor_SendTorque(uint16_t can_id, float torque, float torque_max);
 

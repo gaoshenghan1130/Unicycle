@@ -8,77 +8,41 @@
 #define DIR_NEGATIVE 0
 
 // encoding for direction
-#define DIR_X_CODE 0
-#define DIR_Y_CODE 1
-#define DIR_Z_CODE 2
-#define DIR_W_CODE 3
+#define DIR_X_CODE 
 
-#define DIR_CODE_LENGTH 3 // in bits for direction encoding, leave 1 bit for sign
-
-#define TORQUE_CODE_LENGTH 13 // in bits for torque encoding, unit A
-
-// first 3 digit of torque is exponent (2), next 10 digit is mantissa (10)
-#define TORQUE_EXP_LENGTH 3
-#define TORQUE_MANT_LENGTH 10
-
-#define TORQUE_FACTOR 0.1f // torque unit is 0.1A
 
 // in total 8 = 2 * 4 bytes for each direction
 
 // only using first 2 bytes for torque encoding, the rest is reserved, total 128 bits
 
-typedef struct
-{
-    uint8_t pos;
-    uint8_t vel;
-    uint8_t torque;
-    char rawData[128]; // orginal data
-    uint8_t size;      // actual data size
-} MainMotorData_t;
-
-typedef struct
-{
-    char rawData[128]; // orginal data
-    uint8_t size;      // actual data size
-} BalancerMotorData_t;
-
-typedef struct
-{
-    char rawData[128]; // orginal data
-    uint8_t size;      // actual data size
-} UCommandData_t;
-
 typedef struct 
 {
-    int8_t dirX;   // -100 ~ 100
-    int8_t dirY;   // -100 ~ 100
-    int8_t dirZ;   // -100 ~ 100
-    int8_t dirW;   // -100 ~ 100
+    double mt;     // main motor torque
+    double mp;     // pendulum position
 } Command_t;
 
-typedef struct BLEData
+typedef struct BLEData // received BLE data structure
 {
-    MainMotorData_t mainMotor;
-    BalancerMotorData_t balancerMotor;
-    UCommandData_t uCommand;
+    Command_t uCommand; // user command data
+    char rawData[128]; // raw data received from BLE python
 } BLEData; // all data received from BLE
 
+typedef struct MotorStatus // send back motor status structure
+{
+    double pg;      // pendulum angle in degrees
+    double pdg;     // pendulum angular velocity
+    double mp;       // motor position
+    double mdp;     // motor velocity
+    char rawData[128]; // raw data received from BLE
+} MotorStatus;
 
 
 
 // public functions
-Command_t getDirectionCommand();
 
-
-
-
-
-uint16_t numEncode(int torque, double factor); // use this to encode numbers to 2 bytes for transmission, for no 
-int numDecode(int torque, double factor); // use this to decode 2 bytes back to numbers
-void updateMotorData(char *rawData, int length);
-void updateBalancerData(char *rawData, int length);
-void loadCommand(char *data, int length);
-volatile UCommandData_t *getCommand();
+volatile BLEData *getBLEData(); // get current command data
+void runBLE(); // run BLE process, send data to MCU in this function, data received from central is processed in callback
+void receiveBLEData(char *rawData, int length); // receive raw data from central and decode
 
 
 #endif /* BLE_H */
