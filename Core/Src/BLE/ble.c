@@ -2,6 +2,8 @@
 #include "../../../STM32_WPAN/App/custom_stm.h"
 #include "ble_std.h"
 #include <stdint.h>
+#include <stdio.h>
+#include "custom_app.h"
 
 volatile BLEData bleData;         // global BLE data
 volatile MotorStatus motorStatus; // global motor status to send back
@@ -59,6 +61,7 @@ void receiveBLEData(char *rawData, int length) {
   for (int i = 0; i < length && i < 128; i++) {
     bleData.rawData[i] = rawData[i];
   }
+  printf("received data from central\r\n");
   loadBLEData();
 }
 
