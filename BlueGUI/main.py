@@ -1,4 +1,4 @@
-from detect import get_client, connect_ble, disconnect_ble, write_ble
+from detect import get_client, connect_ble, disconnect_ble, write_ble, check_connection
 import bleak
 import asyncio
 import threading
@@ -10,5 +10,6 @@ async def main():
         await asyncio.sleep(1) 
         print("Preparing to write data...")
         await write_ble()
+        await check_connection()
 
 asyncio.run(main())
