@@ -78,7 +78,7 @@ void runBLE() {
   Custom_STM_App_Update_Char_Variable_Length(
       CUSTOM_STM_MM, (uint8_t *)motorStatus.rawData, 128);
   // print current command
-  printf("BLE Command: mt = %.2f, mp = %.2f\r\n", bleData.uCommand.mt,
-         bleData.uCommand.mp);
+  // printf("BLE Command: mt = %.2f, mp = %.2f\r\n", bleData.uCommand.mt,
+  //        bleData.uCommand.mp);
 }
 volatile BLEData *getBLEData() { return &bleData; }

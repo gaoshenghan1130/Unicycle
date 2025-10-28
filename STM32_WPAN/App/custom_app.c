@@ -96,8 +96,7 @@ static void Custom_Ucc_Send_Indication(void);
 void Custom_STM_App_Notification(Custom_STM_App_Notification_evt_t *pNotification)
 {
   /* USER CODE BEGIN CUSTOM_STM_App_Notification_1 */
-  printf("Custom_STM_App_Notification: opcode=%d, length=%d\r\n", pNotification->Custom_Evt_Opcode, pNotification->DataTransfered.Length);
-
+  
   /* USER CODE END CUSTOM_STM_App_Notification_1 */
   switch (pNotification->Custom_Evt_Opcode)
   {

@@ -12,7 +12,7 @@
 
 #define INTERRUPT_PIN        GPIO_PIN_0
 #define INTERRUPT_GPIO_PORT  GPIOA
-#define MOTOR_DEFAULT_ID 0x000
+#define MOTOR_DEFAULT_ID 0x064
 
 extern char* bufferReceive[64];
 extern char* bufferTransmit[64];
@@ -24,7 +24,9 @@ typedef struct {
     bool updated;        // whether this feedback is updated
 } MotorFeedback;
 
-void MY_CAN_Transmit(uint8_t *data, uint8_t len, uint8_t can_id);
+void MY_CAN_Transmit(uint8_t *data, uint8_t len, int can_id);
+void MY_CAN_Receive(uint8_t *data, uint8_t len, int can_id);
+void MY_CAN_Init(void);
 void Motor_Init(uint8_t motor_id);
 void Motor_SendTorque(uint16_t can_id, float torque, float torque_max);
 

@@ -33,6 +33,7 @@
 #include <stdio.h>
 
 // usart
+#include "stm32wbxx_hal.h"
 #include "usart.h"
 // BLE
 #include "BLE/ble.h"
@@ -44,6 +45,7 @@
 #include "svc_ctl.h"
 
 // CAN
+#include "CAN/CANSPI.h"
 #include "CAN/can.h"
 #include "CAN/mcp2515.h"
 
@@ -138,7 +140,8 @@ int main(void)
   HAL_Delay(100); // wait for SWV, sometimes it doesn't immediately work
 
   MX_USART1_UART_Init();
-  //Motor_Init(0); // initialize motor with CAN ID 1
+  // Motor_Init(MOTOR_DEFAULT_ID); // initialize motor with CAN ID 1
+  MY_CAN_Init(); // initialize CAN
 
   /* USER CODE END 2 */
 
@@ -147,13 +150,33 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  HAL_Delay(1000); // wait for BLE init
+
+  uint8_t tdata[8];
+  uint8_t rdata[8];
+
+  for (int i = 0; i < 8; i++)
+    tdata[i] = 0xFF;
+  tdata[7] = 0xFD; // stop command
+
+  HAL_Delay(500); // wait for BLE init
   while (1) {
+
+
     /* USER CODE END WHILE */
     MX_APPE_Process();
 
     /* USER CODE BEGIN 3 */
     HAL_Delay(1000);
+
+    MY_CAN_Transmit(tdata, 8, MOTOR_DEFAULT_ID);
+    HAL_Delay(30);
+    MY_CAN_Receive(rdata, 8, MOTOR_DEFAULT_ID);
+
+    printf("Received CAN data: ");
+    for (int i = 0; i < 8; i++) {
+      printf("%02X ", rdata[i]);
+    }
+    printf("\n");
 
     //////////////////////////////////////////////////////////////////////////////////////////////////
     //// Main loop
