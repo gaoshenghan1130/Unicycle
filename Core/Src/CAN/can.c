@@ -32,6 +32,7 @@ MotorFeedback Motor_ParseFeedback(uint8_t *data, float Pmax, float Vmax,
                                   float Imax);
 
 void MY_CAN_Init(void) {
+  HAL_GPIO_WritePin(CAN_NSS_GPIO_PORT, CAN_NSS_PIN, GPIO_PIN_RESET); // bring CS low forever
   CANSPI_Initialize();  
 }
 
