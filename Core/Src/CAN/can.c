@@ -49,8 +49,8 @@ void MY_CAN_Init(void)
   //////////////////////////////////////////////////////////////////////////////////////////
   // Set bit timing registers
   MCP2515_WriteByte(0x2A, 0x00); // CNF1
-  MCP2515_WriteByte(0x29, 0x83); // CNF2
-  MCP2515_WriteByte(0x28, 0x02); // CNF3
+  MCP2515_WriteByte(0x29, 0x80); // CNF2
+  MCP2515_WriteByte(0x28, 0x80); // CNF3
 
   // Set RX filters to accept all messages
   MCP2515_WriteByte(0x00, 0x00); // RXF0SIDH
