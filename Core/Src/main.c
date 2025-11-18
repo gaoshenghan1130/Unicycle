@@ -167,7 +167,6 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
     HAL_Delay(1000);
-
     MY_CAN_Transmit(tdata, 8, MOTOR_DEFAULT_ID);
     HAL_Delay(30);
     MY_CAN_Receive(rdata, 8, MOTOR_DEFAULT_ID);

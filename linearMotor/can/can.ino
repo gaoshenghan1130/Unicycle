@@ -1,70 +1,65 @@
 #include <SPI.h>
 #include <mcp2515.h>
 
-struct can_frame canMsg;
-struct can_frame resetmsg;
-struct can_frame startmsg;
-MCP2515 mcp2515(53);  // 10 for UNO, 53 for MEGA
-u8 c=0;
+MCP2515 mcp2515(53);
 
+struct can_frame frame;
+
+void writeSDO(uint16_t index, uint8_t sub, uint32_t value) {
+  struct can_frame f;
+  f.can_id = 0x600 + 1;  // nodeID = 1
+  f.can_dlc = 8;
+  f.data[0] = 0x23;      // expedited download, 4 bytes
+  f.data[1] = index & 0xFF;
+  f.data[2] = index >> 8;
+  f.data[3] = sub;
+  f.data[4] = value & 0xFF;
+  f.data[5] = (value >> 8) & 0xFF;
+  f.data[6] = (value >> 16) & 0xFF;
+  f.data[7] = (value >> 24) & 0xFF;
+
+  mcp2515.sendMessage(&f);
+}
 
 void setup() {
-  Serial.begin(9600);
-  
+  Serial.begin(115200);
+
   mcp2515.reset();
   mcp2515.setBitrate(CAN_1000KBPS, MCP_8MHZ);
+
+  // receive ALL frames
+  mcp2515.setFilterMask(MCP2515::MASK0, false, 0x000);
+  mcp2515.setFilterMask(MCP2515::MASK1, false, 0x000);
+  for (int i = 0; i < 6; i++) {
+    mcp2515.setFilter((MCP2515::RXF)i, false, 0x000);
+  }
+
   mcp2515.setNormalMode();
-  //Serial.print("Wait a while for mc3001\n");
-  //delay(5000);
-  //mcp2515.setLoopbackMode();
-  
-  Serial.println("------- CAN Read ----------");
-  Serial.println("ID  DLC   DATA");
 
-  startmsg.can_id = 0x000; 
-  startmsg.can_dlc = 2;
-  startmsg.data[0] = 0x01;
-  startmsg.data[1] = 0x00;
+  Serial.println("Starting MC3001...");
 
-  mcp2515.sendMessage(&startmsg);
+  // (1) set operation mode = 1 (profile position mode)
+  writeSDO(0x6060, 0x00, 1);
+  delay(20);
+
+  // (2) controlword sequence
+  writeSDO(0x6040, 0x00, 0x0006);
+  delay(20);
+  writeSDO(0x6040, 0x00, 0x0007);
+  delay(20);
+  writeSDO(0x6040, 0x00, 0x000F);
+  delay(20);
 }
 
 void loop() {
-  mcp2515.sendMessage(&startmsg);
-
-  
-
-  // resetmsg.can_id = 0x000; 
-  // resetmsg.can_dlc = 2;
-  // resetmsg.data[0] = 0x81;
-  // resetmsg.data[1] = 0x00;
-
-
-  // char startmsg[2] = { 0x01, 0x00 };
-  // char resetnodemsg[2] = { 0x81, 0x00 };
-
-  //byte err = mcp2515.sendMessage(&resetmsg);
-  //Serial.println(err);
-
-
-
-  if (mcp2515.readMessage(&canMsg) == MCP2515::ERROR_OK) {
-    Serial.print(c++); // print ID
-    Serial.print(" "); // print ID
-    Serial.print(canMsg.can_id, HEX); // print ID
-    Serial.print(" "); 
-    Serial.print(canMsg.can_dlc, HEX); // print DLC
-    Serial.print(" ");
-    
-    for (int i = 0; i<canMsg.can_dlc; i++)  {  // print the data
-      Serial.print(canMsg.data[i],HEX);
-      Serial.print(" ");
+  struct can_frame rx;
+  if (mcp2515.readMessage(&rx) == MCP2515::ERROR_OK) {
+    Serial.print("ID: ");
+    Serial.print(rx.can_id, HEX);
+    Serial.print(" Data: ");
+    for (int i = 0; i < rx.can_dlc; i++) {
+      Serial.print(rx.data[i], HEX); Serial.print(" ");
     }
-
-    Serial.println();      
+    Serial.println();
   }
-
-  delay(500);
-  
-
 }
